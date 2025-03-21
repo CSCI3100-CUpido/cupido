@@ -1,4 +1,4 @@
-# Project Repository: CUpido App
+# CUpido App
 
  Please read this document carefully as it outlines our conventions and process for all developers.
 
