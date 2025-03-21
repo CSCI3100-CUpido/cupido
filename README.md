@@ -78,6 +78,8 @@ The complete CI/CD pipeline is defined in the `.github/workflows/ci.yml` file in
   ```bash
   git push origin feature/new-feature
   ```
+  - This command pushes your local feature/new-feature branch to the remote repository. If the branch does not exist remotely, it will be created. Once pushed, you can create a pull request to merge your changes into the target branch.
+
 - CI Pipeline Runs Automatically:
   - Commitlint job checks each commit message.
   - Invalid commit messages cause CI jobs to fail.
@@ -135,6 +137,7 @@ Error: You have commit messages with errors
 
   - On GitHub, create a PR from your feature branch (e.g., `feature/new-feature`) to `main`.
   - The CI pipeline will run again on the PR.
+  - If commit message is wrong, it cannot be merged into the main branch, you should do step 4.
 
 - **Review and Approve:**
 
