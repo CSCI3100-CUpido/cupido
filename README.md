@@ -55,6 +55,21 @@ The complete CI/CD pipeline is defined in the `.github/workflows/ci.yml` file in
 
 ---
 
+## Workflow Steps (Simplified)
+
+```bash
+  git pull origin main # sync with remote github repo
+  git checkout -b feature/new-feature-name # create local feature branch, use lower case with "-", branch name should be feature/new-feature-name
+  # ..... add code .....
+  git add new_file # add all files for this features
+  git commit -m "type: subject" # please follow git commit message instruction
+  git push origin feature/new-feature-name
+  # go to github, create pull request and merge it into main branch
+  # delete remote feature branch when merged
+  # optionally, delete local feature branch
+
+```
+
 ## Workflow Steps
 
 ### 1. Initial Repository Setup
