@@ -1,0 +1,66 @@
+<div class="message-detail-container">
+    <!-- 未登录状态显示 -->
+    <div *ngIf="!isLoggedIn" class="login-required">
+      <p>Please login to view and send messages</p>
+      <button (click)="login()" class="login-button">Login</button>
+    </div>
+  
+    <!-- 已登录状态显示 -->
+    <ng-container *ngIf="isLoggedIn">
+      <div class="message-header">
+        <button class="back-button" (click)="navigateToMessages()">
+          ← Back
+        </button>
+        <h2 *ngIf="otherUserName">{{ otherUserName }}</h2>
+      </div>
+  
+      <div *ngIf="isLoading" class="loading-spinner">
+        Loading messages...
+      </div>
+  
+      <div *ngIf="!isLoading && messages.length === 0" class="no-messages">
+        <p>Start a conversation with {{ otherUserName }}!</p>
+      </div>
+  
+      <div #messageContainer class="messages-container" *ngIf="!isLoading">
+        <div 
+          *ngFor="let message of messages" 
+          class="message-bubble"
+          [ngClass]="{'own-message': isOwnMessage(message), 'other-message': !isOwnMessage(message)}"
+        >
+          <div class="message-content">
+            {{ message.content }}
+          </div>
+          <div class="message-time">
+            {{ getMessageTime(message) }}
+            <span *ngIf="isOwnMessage(message)" class="read-status">
+              {{ message.isRead ? '• Read' : '' }}
+            </span>
+          </div>
+        </div>
+      </div>
+  
+      <div class="message-input-container">
+        <form [formGroup]="messageForm" (ngSubmit)="sendMessage()">
+          <div class="input-group">
+            <textarea 
+              formControlName="content" 
+              placeholder="Type a message..."
+              rows="1"
+              (keydown.enter)="$event.preventDefault(); sendMessage()"
+            ></textarea>
+            <button 
+              type="submit" 
+              [disabled]="messageForm.invalid || isSending"
+            >
+              Send
+            </button>
+          </div>
+          <div *ngIf="messageForm.get('content')?.invalid && messageForm.get('content')?.touched" class="error-message">
+            <span *ngIf="messageForm.get('content')?.errors?.['required']">Message cannot be empty</span>
+            <span *ngIf="messageForm.get('content')?.errors?.['maxlength']">Message is too long</span>
+          </div>
+        </form>
+      </div>
+    </ng-container>
+  </div>

@@ -1,0 +1,127 @@
+.message-list-container {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  h2 {
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .loading-spinner, .no-messages, .login-required {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .login-required {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    padding: 30px;
+  }
+  
+  .login-button {
+    padding: 10px 25px;
+    background-color: #1890ff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .login-button:hover {
+    background-color: #096dd9;
+  }
+  
+  .chats-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .chat-item {
+    display: flex;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .chat-item:hover {
+    background-color: #f5f5f5;
+    transform: translateY(-2px);
+  }
+  
+  .chat-item.unread {
+    background-color: #e6f7ff;
+    border-left: 3px solid #1890ff;
+  }
+  
+  .chat-avatar {
+    margin-right: 15px;
+  }
+  
+  .avatar-placeholder {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #1890ff;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: bold;
+  }
+  
+  .chat-details {
+    flex: 1;
+    overflow: hidden;
+  }
+  
+  .chat-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+  }
+  
+  .participant-name {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  
+  .chat-time {
+    font-size: 12px;
+    color: #888;
+  }
+  
+  .chat-preview {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #666;
+  }
+  
+  .chat-preview p {
+    margin: 0;
+  }
+  
+  .unread-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #1890ff;
+    margin-left: 10px;
+    align-self: center;
+  }
