@@ -1,0 +1,144 @@
+/* src/app/components/auth/verify-email/verify-email.component.css */
+.verify-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 80px);
+    padding: 30px 15px;
+    background-color: #f8f9fa;
+  }
+  
+  .verify-card {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    width: 100%;
+    max-width: 500px;
+    padding: 40px 30px;
+    text-align: center;
+  }
+  
+  .verify-icon {
+    font-size: 64px;
+    color: #6c757d;
+    margin-bottom: 30px;
+  }
+  
+  .verify-icon.loading {
+    color: #4f7cac;
+  }
+  
+  .verify-icon.success {
+    color: #28a745;
+  }
+  
+  .verify-content h2 {
+    color: #343a40;
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+  }
+  
+  .verify-content p {
+    color: #6c757d;
+    margin-bottom: 15px;
+    line-height: 1.5;
+  }
+  
+  .email {
+    font-weight: 600;
+    color: #4f7cac;
+    padding: 5px 10px;
+    background-color: #e9f2fa;
+    border-radius: 6px;
+    display: inline-block;
+    margin-bottom: 20px;
+  }
+  
+  .instructions {
+    font-size: 0.9rem;
+    color: #868e96;
+    margin-bottom: 30px;
+  }
+  
+  .success-message {
+    color: #28a745;
+    font-weight: 500;
+  }
+  
+  .error-message {
+    color: #dc3545;
+    font-weight: 500;
+  }
+  
+  .verify-actions {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .btn-primary {
+    width: 100%;
+    padding: 12px;
+    background-color: #4f7cac;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .btn-primary:hover {
+    background-color: #3a5d82;
+  }
+  
+  .btn-primary:disabled {
+    background-color: #a8c4e5;
+    cursor: not-allowed;
+  }
+  
+  .btn-secondary {
+    width: 100%;
+    padding: 12px;
+    background-color: #f8f9fa;
+    color: #4f7cac;
+    border: 1px solid #4f7cac;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #e9f2fa;
+  }
+  
+  .btn-link {
+    color: #6c757d;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s;
+  }
+  
+  .btn-link:hover {
+    color: #4f7cac;
+    text-decoration: underline;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 576px) {
+    .verify-card {
+      padding: 30px 20px;
+    }
+    
+    .verify-icon {
+      font-size: 50px;
+      margin-bottom: 20px;
+    }
+    
+    .verify-content h2 {
+      font-size: 1.5rem;
+    }
+  }

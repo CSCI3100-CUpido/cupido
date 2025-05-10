@@ -1,0 +1,61 @@
+<!-- src/app/components/auth/verify-email/verify-email.component.html -->
+<div class="verify-container">
+    <div class="verify-card">
+      <div class="verify-icon" *ngIf="!isVerifying && !isVerified">
+        <i class="fa fa-envelope-o"></i>
+      </div>
+      <div class="verify-icon loading" *ngIf="isVerifying">
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+      </div>
+      <div class="verify-icon success" *ngIf="isVerified">
+        <i class="fa fa-check-circle"></i>
+      </div>
+      
+      <!-- Initial state - check your email -->
+      <div class="verify-content" *ngIf="!isVerifying && !isVerified && !isTokenVerification">
+        <h2>Check Your Email</h2>
+        <p>We've sent a verification link to your CUHK email.</p>
+        <p class="email">{{ currentEmail }}</p>
+        <p class="instructions">Please click the link in the email to verify your account. If you don't see it, check your spam folder.</p>
+        
+        <div class="verify-actions">
+          <button class="btn-primary" (click)="resendVerificationEmail()" [disabled]="isResending">
+            {{ isResending ? 'Sending...' : 'Resend Email' }}
+          </button>
+          <a routerLink="/login" class="btn-link">Back to Login</a>
+        </div>
+      </div>
+      
+      <!-- Verifying state -->
+      <div class="verify-content" *ngIf="isVerifying">
+        <h2>Verifying Email</h2>
+        <p>Please wait while we verify your email address...</p>
+      </div>
+      
+      <!-- Success state -->
+      <div class="verify-content" *ngIf="isVerified">
+        <h2>Email Verified!</h2>
+        <p>Your CUHK email has been successfully verified.</p>
+        <p class="success-message">You can now access all features of the CUHK Dating App.</p>
+        
+        <div class="verify-actions">
+          <button class="btn-primary" routerLink="/matches">Find Matches</button>
+          <a routerLink="/profile" class="btn-secondary">Complete Your Profile</a>
+        </div>
+      </div>
+      
+      <!-- Error state -->
+      <div class="verify-content" *ngIf="verificationError">
+        <h2>Verification Failed</h2>
+        <p class="error-message">{{ verificationError }}</p>
+        <p>Please try again or contact support if the issue persists.</p>
+        
+        <div class="verify-actions">
+          <button class="btn-primary" (click)="resendVerificationEmail()" [disabled]="isResending">
+            {{ isResending ? 'Sending...' : 'Resend Email' }}
+          </button>
+          <a routerLink="/login" class="btn-link">Back to Login</a>
+        </div>
+      </div>
+    </div>
+  </div>
