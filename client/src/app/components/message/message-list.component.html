@@ -1,0 +1,50 @@
+<div class="message-list-container">
+    <h2>Messages</h2>
+    
+    <!-- 未登录状态显示 -->
+    <div *ngIf="!isLoggedIn" class="login-required">
+      <p>Please login to view your messages</p>
+      <button (click)="login()" class="login-button">Login</button>
+    </div>
+    
+    <!-- 已登录状态显示 -->
+    <ng-container *ngIf="isLoggedIn">
+      <div *ngIf="isLoading" class="loading-spinner">
+        Loading chats...
+      </div>
+      
+      <div *ngIf="!isLoading && chats.length === 0" class="no-messages">
+        <p>You have no messages yet.</p>
+      </div>
+      
+      <div *ngIf="!isLoading && chats.length > 0" class="chats-list">
+        <div 
+          *ngFor="let chat of chats" 
+          class="chat-item" 
+          [class.unread]="hasUnreadMessages(chat)"
+          [routerLink]="['/messages', chat.id]"
+        >
+          <div class="chat-avatar">
+            <div class="avatar-placeholder">
+              {{ getParticipantName(getOtherParticipantId(chat)).charAt(0) }}
+            </div>
+          </div>
+          
+          <div class="chat-details">
+            <div class="chat-header">
+              <h3 class="participant-name">{{ getParticipantName(getOtherParticipantId(chat)) }}</h3>
+              <span class="chat-time">
+                {{ chat.lastMessage?.createdAt | date:'short' }}
+              </span>
+            </div>
+            
+            <div class="chat-preview">
+              <p>{{ chat.lastMessage?.content || 'No messages yet' }}</p>
+            </div>
+          </div>
+          
+          <div *ngIf="hasUnreadMessages(chat)" class="unread-indicator"></div>
+        </div>
+      </div>
+    </ng-container>
+  </div>

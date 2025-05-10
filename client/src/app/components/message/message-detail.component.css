@@ -1,0 +1,160 @@
+.message-detail-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 120px);
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .login-required {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    padding: 30px;
+    flex: 1;
+    text-align: center;
+    background-color: #fff;
+  }
+  
+  .login-button {
+    padding: 10px 25px;
+    background-color: #1890ff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .login-button:hover {
+    background-color: #096dd9;
+  }
+  
+  .message-header {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background-color: #fff;
+    border-bottom: 1px solid #e8e8e8;
+  }
+  
+  .back-button {
+    background: none;
+    border: none;
+    font-size: 16px;
+    color: #1890ff;
+    cursor: pointer;
+    margin-right: 15px;
+  }
+  
+  .message-header h2 {
+    margin: 0;
+    font-size: 18px;
+  }
+  
+  .loading-spinner, .no-messages {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+  }
+  
+  .messages-container {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .message-bubble {
+    max-width: 70%;
+    padding: 10px 15px;
+    border-radius: 18px;
+    position: relative;
+    word-wrap: break-word;
+  }
+  
+  .own-message {
+    align-self: flex-end;
+    background-color: #dcf8c6;
+    border-top-right-radius: 4px;
+  }
+  
+  .other-message {
+    align-self: flex-start;
+    background-color: #fff;
+    border-top-left-radius: 4px;
+  }
+  
+  .message-content {
+    font-size: 15px;
+    margin-bottom: 5px;
+  }
+  
+  .message-time {
+    font-size: 11px;
+    color: #888;
+    text-align: right;
+  }
+  
+  .read-status {
+    color: #1890ff;
+    margin-left: 5px;
+  }
+  
+  .message-input-container {
+    padding: 15px;
+    background-color: #fff;
+    border-top: 1px solid #e8e8e8;
+  }
+  
+  .input-group {
+    display: flex;
+    gap: 10px;
+  }
+  
+  textarea {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #d9d9d9;
+    border-radius: 20px;
+    resize: none;
+    font-family: inherit;
+    font-size: 15px;
+  }
+  
+  textarea:focus {
+    outline: none;
+    border-color: #1890ff;
+  }
+  
+  button {
+    padding: 0 20px;
+    background-color: #1890ff;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+  button:disabled {
+    background-color: #d9d9d9;
+    cursor: not-allowed;
+  }
+  
+  .error-message {
+    color: #f5222d;
+    font-size: 12px;
+    margin-top: 5px;
+  }
