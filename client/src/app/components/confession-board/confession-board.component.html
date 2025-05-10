@@ -1,0 +1,153 @@
+<!-- src/app/components/confession-board/confession-board.component.html -->
+<div class="confession-board-container">
+    <div class="confession-form-container">
+      <h2 class="section-title">CUHK Confession</h2>
+      <p class="section-subtitle">Share your feelings anonymously with the community</p>
+      
+      <form [formGroup]="confessionForm" (ngSubmit)="submitConfession()">
+        <div class="form-group">
+          <textarea 
+            formControlName="content" 
+            placeholder="What's on your mind?" 
+            rows="4"
+            class="form-control"
+          ></textarea>
+          <div class="validation-error" *ngIf="content.invalid && content.touched">
+            <span *ngIf="content.errors?.['required']">Please write something.</span>
+          </div>
+        </div>
+        
+        <div class="form-options">
+          <div class="anonymous-option">
+            <label class="switch">
+              <input type="checkbox" formControlName="isAnonymous">
+              <span class="slider round"></span>
+            </label>
+            <span>Post anonymously</span>
+          </div>
+          
+          <div class="image-upload">
+            <label for="imageUpload" class="btn-upload">
+              <i class="fa fa-image"></i> Add image
+            </label>
+            <input type="file" id="imageUpload" (change)="onFileSelected($event)" accept="image/*" hidden>
+          </div>
+        </div>
+        
+        <div class="image-preview" *ngIf="selectedImage">
+          <img [src]="imagePreview" alt="Selected image preview">
+          <button type="button" class="btn-remove" (click)="removeImage()">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+        
+        <button type="submit" class="btn-submit" [disabled]="confessionForm.invalid || isSubmitting">
+          {{ isSubmitting ? 'Posting...' : 'Post' }}
+        </button>
+      </form>
+    </div>
+    
+    <div class="confessions-list">
+      <div class="filter-container">
+        <button 
+          [class.active]="currentFilter === 'latest'" 
+          (click)="filterConfessions('latest')">
+          Latest
+        </button>
+        <button 
+          [class.active]="currentFilter === 'popular'" 
+          (click)="filterConfessions('popular')">
+          Popular
+        </button>
+      </div>
+      
+      <div class="loading-container" *ngIf="isLoading">
+        <div class="loader"></div>
+      </div>
+      
+      <div class="empty-state" *ngIf="!isLoading && confessions.length === 0">
+        <i class="fa fa-comment-alt"></i>
+        <p>No confessions yet. Be the first to post!</p>
+      </div>
+      
+      <div class="confession-card" *ngFor="let confession of confessions">
+        <div class="confession-header">
+          <div class="user-info">
+            <img [src]="confession.isAnonymous ? './assets/images/anonymous.png' : './assets/images/placeholder-profile.png'" alt="User">
+            <span>{{ confession.isAnonymous ? 'Anonymous' : 'CUHK Student' }}</span>
+          </div>
+          <span class="post-time">{{ confession.createdAt | date:'medium' }}</span>
+        </div>
+        
+        <div class="confession-content">
+          <p>{{ confession.content }}</p>
+          <img *ngIf="confession.imageUrl" [src]="confession.imageUrl" alt="Confession image" class="confession-image">
+        </div>
+        
+        <div class="confession-actions">
+          <button 
+            class="action-btn" 
+            [class.liked]="confession.isLiked"
+            (click)="toggleLike(confession)">
+            <i class="fa" [ngClass]="confession.isLiked ? 'fa-heart' : 'fa-heart-o'"></i>
+            <span>{{ confession.likesCount || 0 }}</span>
+          </button>
+          
+          <button class="action-btn" (click)="toggleComments(confession)">
+            <i class="fa fa-comment-o"></i>
+            <span>{{ confession.commentsCount || 0 }}</span>
+          </button>
+          
+          <button class="action-btn" (click)="sendPrivateMessage(confession)">
+            <i class="fa fa-envelope-o"></i>
+            <span>Message</span>
+          </button>
+        </div>
+        
+        <div class="confession-comments" *ngIf="confession.showComments">
+          <div class="comments-list">
+            <div class="comment" *ngFor="let comment of confession.comments">
+              <div class="comment-header">
+                <div class="user-info">
+                  <!-- Fix for author photo attribute -->
+                  <img [src]="comment.isAnonymous ? './assets/images/anonymous.png' : comment.authorPhoto || './assets/images/placeholder-avatar.png'" alt="Author avatar" class="comment-avatar">
+                  <span>{{ comment.isAnonymous ? 'Anonymous' : comment.authorName }}</span>
+                </div>
+                <span class="comment-time">{{ comment.createdAt | date:'short' }}</span>
+              </div>
+              <div class="comment-content">
+                <p>{{ comment.content }}</p>
+              </div>
+            </div>
+            
+            <div class="empty-comments" *ngIf="confession.comments && confession.comments.length === 0">
+              <p>No comments yet. Be the first to comment!</p>
+            </div>
+          </div>
+          
+          <form [formGroup]="commentForm" (ngSubmit)="addComment(confession)">
+            <div class="comment-input-container">
+              <input 
+                type="text" 
+                formControlName="commentContent" 
+                placeholder="Write a comment..." 
+                class="comment-input">
+              <div class="comment-options">
+                <label class="switch small">
+                  <input type="checkbox" formControlName="commentAnonymous">
+                  <span class="slider round small"></span>
+                </label>
+                <span class="small-text">Anonymous</span>
+              </div>
+              <button 
+                type="submit" 
+                class="btn-comment" 
+                [disabled]="commentForm.invalid || isSubmittingComment">
+                <i class="fa fa-paper-plane"></i>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
