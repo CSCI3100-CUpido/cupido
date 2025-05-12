@@ -1,3 +1,4 @@
+// src/app/services/auth.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, ReplaySubject, of } from 'rxjs';
@@ -32,7 +33,7 @@ export interface UserRegister {
   email: string;
   password: string;
   confirmPassword: string;
-  dateOfBirth?: string;
+  dateOfBirth?: string | Date;
   gender?: string;
 }
 
@@ -76,7 +77,7 @@ export class AuthService {
     );
   }
 
-  setCurrentUser(user: User): void {
+  setCurrentUser(user: User | null): void {
     if (user) {
       user.roles = user.roles || [];
       const token = user.token;
@@ -86,6 +87,8 @@ export class AuthService {
         Array.isArray(roles) ? user.roles = roles : user.roles.push(roles);
       }
       localStorage.setItem('user', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('user');
     }
     this.currentUserSource.next(user);
   }
@@ -105,6 +108,7 @@ export class AuthService {
     }
     return null; // 如果不在浏览器环境中，返回null
   }
+  
   isLoggedIn(): boolean {
     return !!this.getCurrentUser();
   }
@@ -146,5 +150,67 @@ export class AuthService {
   // Helper method to validate CUHK email format
   isCUHKEmail(email: string): boolean {
     return email.endsWith('@link.cuhk.edu.hk') || email.endsWith('@cuhk.edu.hk');
+  }
+  
+  /**
+   * Get all users (Admin only)
+   * @returns Observable of User[]
+   */
+  getAllUsers(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.apiUrl}/admin/users`);
+  }
+  
+  /**
+   * Get user by ID
+   * @param userId User ID
+   * @returns Observable of User
+   */
+  getUserById(userId: string): Observable<User> {
+    return this.http.get<User>(`${this.apiUrl}/users/${userId}`);
+  }
+  
+  /**
+   * Update user profile
+   * @param updates User updates
+   * @returns Observable of User
+   */
+  updateUserProfile(updates: Partial<User>): Observable<User> {
+    return this.http.put<User>(`${this.apiUrl}/profile`, updates).pipe(
+      map(user => {
+        // Update current user if this is the current user's profile
+        const currentUser = this.getCurrentUser();
+        if (currentUser && currentUser.id === user.id) {
+          this.setCurrentUser(user);
+        }
+        return user;
+      })
+    );
+  }
+  
+  /**
+   * Update user password
+   * @param currentPassword Current password
+   * @param newPassword New password
+   * @returns Observable of string message
+   */
+  updatePassword(currentPassword: string, newPassword: string): Observable<string> {
+    return this.http.put<string>(`${this.apiUrl}/password`, { 
+      currentPassword, 
+      newPassword 
+    });
+  }
+  
+  /**
+   * Delete user account
+   * @param password Password for confirmation
+   * @returns Observable of string message
+   */
+  deleteAccount(password: string): Observable<string> {
+    return this.http.post<string>(`${this.apiUrl}/delete-account`, { password }).pipe(
+      map(response => {
+        this.logout();
+        return response;
+      })
+    );
   }
 }
