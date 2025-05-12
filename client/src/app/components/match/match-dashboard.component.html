@@ -1,0 +1,330 @@
+<!-- src/app/components/match/match-dashboard.component.html -->
+<div class="match-dashboard">
+  <!-- Not Logged In State -->
+  <div class="login-required" *ngIf="!isLoggedIn">
+    <div class="auth-prompt">
+      <div class="auth-icon">
+        <i class="fa fa-heart"></i>
+      </div>
+      <h2>Find Your Perfect Match</h2>
+      <p>Please login or create an account to start matching with CUHK students</p>
+      <div class="auth-actions">
+        <a routerLink="/auth/login" class="btn btn-primary">Login</a>
+        <a routerLink="/auth/register" class="btn btn-outline">Sign Up</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logged In Dashboard -->
+  <div class="dashboard-content" *ngIf="isLoggedIn">
+    <!-- Dashboard Navigation -->
+    <div class="dashboard-nav">
+      <div class="nav-item" [class.active]="activeSection === 'discover'" (click)="changeSection('discover')">
+        <i class="fa fa-search"></i>
+        <span>Discover</span>
+      </div>
+      <div class="nav-item" [class.active]="activeSection === 'matches'" (click)="changeSection('matches')">
+        <i class="fa fa-heart"></i>
+        <span>Matches</span>
+        <span class="badge" *ngIf="mutualMatches.length > 0">{{ mutualMatches.length }}</span>
+      </div>
+      <div class="nav-item" [class.active]="activeSection === 'liked'" (click)="changeSection('liked')">
+        <i class="fa fa-thumbs-up"></i>
+        <span>Liked</span>
+        <span class="badge" *ngIf="likedUsers.length > 0">{{ likedUsers.length }}</span>
+      </div>
+      <div class="nav-item" [class.active]="activeSection === 'likedBy'" (click)="changeSection('likedBy')">
+        <i class="fa fa-users"></i>
+        <span>Likes You</span>
+        <span class="badge highlight" *ngIf="likedByUsers.length > 0">{{ likedByUsers.length }}</span>
+      </div>
+    </div>
+    
+    <!-- Interest Filters -->
+    <div class="interest-filters" *ngIf="activeSection === 'discover'">
+      <h3>Filter by interests</h3>
+      <div class="interest-chips">
+        <div
+          *ngFor="let interest of allInterests"
+          class="interest-chip"
+          [class.selected]="isInterestSelected(interest)"
+          (click)="toggleInterestFilter(interest)"
+        >
+          {{ interest }}
+        </div>
+      </div>
+    </div>
+    
+    <!-- Loading Indicator -->
+    <div class="loading-container" *ngIf="isLoading">
+      <div class="loader"></div>
+      <p>Finding matches...</p>
+    </div>
+    
+    <!-- Error Message -->
+    <div class="error-message" *ngIf="errorMessage && !isLoading">
+      <i class="fa fa-exclamation-circle"></i>
+      <p>{{ errorMessage }}</p>
+      <button class="btn-retry" (click)="refreshMatches()">
+        <i class="fa fa-refresh"></i> Try Again
+      </button>
+    </div>
+    
+    <!-- Discover Section -->
+    <div class="section-content" *ngIf="activeSection === 'discover' && !isLoading && !errorMessage">
+      <!-- Match Card -->
+      <div class="match-card-container" *ngIf="!noMoreMatches">
+        <div class="match-card" [class.swipe-left]="swipeDirection === 'left'" [class.swipe-right]="swipeDirection === 'right'">
+          <div class="card-photo">
+            <img [src]="getCurrentMatch()?.photoUrl || 'assets/images/default-avatar.jpg'" alt="User photo">
+            <div class="compatibility-badge">
+              <i class="fa fa-star"></i> {{ getCurrentMatch()?.compatibilityScore }}% Match
+            </div>
+          </div>
+          
+          <div class="card-info">
+            <h2>{{ getCurrentMatch()?.username }}, {{ getCurrentMatch()?.age }}</h2>
+            <div class="location">
+              <i class="fa fa-map-marker"></i> {{ getCurrentMatch()?.city }}
+            </div>
+            
+            <div class="bio">
+              <p>{{ getCurrentMatch()?.bio }}</p>
+            </div>
+            
+            <div class="interests-section">
+              <h3>Interests</h3>
+              <div class="interest-tags">
+                <span class="interest-tag" *ngFor="let interest of getCurrentMatch()?.interests">
+                  {{ interest }}
+                </span>
+              </div>
+              
+              <div *ngIf="getCurrentMatch()?.matchingInterests?.length" class="matching-interests">
+                <h3>You both like</h3>
+                <div class="interest-tags matching">
+                  <span class="interest-tag shared" *ngFor="let interest of getCurrentMatch()?.matchingInterests">
+                    {{ interest }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card-actions">
+            <button class="btn-action dislike" (click)="passUser()">
+              <i class="fa fa-times"></i>
+            </button>
+            <button class="btn-action like" (click)="likeUser(getCurrentMatch()!)">
+              <i class="fa fa-heart"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- No More Matches -->
+      <div class="no-matches" *ngIf="noMoreMatches">
+        <div class="no-matches-icon">
+          <i class="fa fa-search"></i>
+        </div>
+        <h2>No more matches right now</h2>
+        <p>We've run out of people to show you. Adjust your preferences or check back later.</p>
+        <div class="no-matches-actions">
+          <button class="btn btn-primary" (click)="refreshMatches()">
+            <i class="fa fa-refresh"></i> Refresh
+          </button>
+          <a routerLink="/match/settings" class="btn btn-outline">
+            <i class="fa fa-sliders"></i> Adjust Preferences
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Matches Section -->
+    <div class="section-content" *ngIf="activeSection === 'matches' && !isLoading">
+      <div *ngIf="mutualMatches.length === 0" class="empty-state">
+        <div class="empty-icon">
+          <i class="fa fa-heart"></i>
+        </div>
+        <h2>No matches yet</h2>
+        <p>When you and someone else both like each other, they'll appear here.</p>
+      </div>
+      
+      <div class="matches-grid" *ngIf="mutualMatches.length > 0">
+        <div class="match-item" *ngFor="let match of mutualMatches">
+          <div class="match-photo">
+            <img [src]="match.photoUrl || 'assets/images/default-avatar.jpg'" alt="Match photo">
+            <div class="online-indicator" [class.online]="match.isOnline"></div>
+          </div>
+          <div class="match-details">
+            <div class="match-header">
+              <h3>{{ match.username }}, {{ match.age }}</h3>
+              <div class="match-compatibility">
+                <i class="fa fa-star"></i> {{ match.compatibilityScore }}%
+              </div>
+            </div>
+            <div class="match-location">
+              <i class="fa fa-map-marker"></i> {{ match.city }}
+            </div>
+            <div class="match-activity" *ngIf="match.lastActive">
+              <i class="fa fa-clock-o"></i> Last active {{ match.lastActive | timeago }}
+            </div>
+            <div class="match-interests">
+              <span class="interest-tag" *ngFor="let interest of match.matchingInterests.slice(0, 3)">
+                {{ interest }}
+              </span>
+              <span *ngIf="match.matchingInterests.length > 3" class="more-interests">
+                +{{ match.matchingInterests.length - 3 }} more
+              </span>
+            </div>
+          </div>
+          <div class="match-actions">
+            <button class="btn btn-primary btn-sm" (click)="sendMessage(match.id)">
+              <i class="fa fa-comment"></i> Message
+            </button>
+            <a [routerLink]="['/profile', match.id]" class="btn btn-outline btn-sm">
+              <i class="fa fa-user"></i> Profile
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Liked Users Section -->
+    <div class="section-content" *ngIf="activeSection === 'liked' && !isLoading">
+      <div *ngIf="likedUsers.length === 0" class="empty-state">
+        <div class="empty-icon">
+          <i class="fa fa-thumbs-up"></i>
+        </div>
+        <h2>You haven't liked anyone yet</h2>
+        <p>When you like someone, they'll appear here.</p>
+      </div>
+      
+      <div class="users-list" *ngIf="likedUsers.length > 0">
+        <div class="user-card" *ngFor="let user of likedUsers">
+          <div class="user-photo">
+            <img [src]="user.photoUrl || 'assets/images/default-avatar.jpg'" alt="User photo">
+          </div>
+          <div class="user-details">
+            <h3>{{ user.username }}, {{ user.age }}</h3>
+            <div class="user-info">
+              <div class="user-location">
+                <i class="fa fa-map-marker"></i> {{ user.city }}
+              </div>
+              <div class="user-compatibility">
+                <i class="fa fa-star"></i> {{ user.compatibilityScore }}% Match
+              </div>
+            </div>
+            <div class="user-interests">
+              <span class="interest-tag" *ngFor="let interest of user.matchingInterests.slice(0, 3)">
+                {{ interest }}
+              </span>
+            </div>
+          </div>
+          <div class="user-actions">
+            <button class="btn btn-danger btn-sm" (click)="unlikeUser(user)">
+              <i class="fa fa-times"></i> Unlike
+            </button>
+            <a [routerLink]="['/profile', user.id]" class="btn btn-outline btn-sm">
+              <i class="fa fa-user"></i> Profile
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Liked By Section -->
+    <div class="section-content" *ngIf="activeSection === 'likedBy' && !isLoading">
+      <div *ngIf="likedByUsers.length === 0" class="empty-state">
+        <div class="empty-icon">
+          <i class="fa fa-users"></i>
+        </div>
+        <h2>No one has liked you yet</h2>
+        <p>When someone likes you, they'll appear here.</p>
+      </div>
+      
+      <div class="users-list" *ngIf="likedByUsers.length > 0">
+        <div class="user-card" *ngFor="let user of likedByUsers">
+          <div class="user-photo">
+            <img [src]="user.photoUrl || 'assets/images/default-avatar.jpg'" alt="User photo">
+          </div>
+          <div class="user-details">
+            <h3>{{ user.username }}, {{ user.age }}</h3>
+            <div class="user-info">
+              <div class="user-location">
+                <i class="fa fa-map-marker"></i> {{ user.city }}
+              </div>
+              <div class="user-compatibility">
+                <i class="fa fa-star"></i> {{ user.compatibilityScore }}% Match
+              </div>
+            </div>
+            <div class="user-interests">
+              <span class="interest-tag" *ngFor="let interest of user.matchingInterests.slice(0, 3)">
+                {{ interest }}
+              </span>
+            </div>
+          </div>
+          <div class="user-actions">
+            <button class="btn" [class.btn-primary]="!isLiked(user.id)" [class.btn-success]="isLiked(user.id)" (click)="isLiked(user.id) ? unlikeUser(user) : likeUser(user)">
+              <i class="fa" [class.fa-heart-o]="!isLiked(user.id)" [class.fa-heart]="isLiked(user.id)"></i>
+              {{ isLiked(user.id) ? 'Matched' : 'Like Back' }}
+            </button>
+            <a [routerLink]="['/profile', user.id]" class="btn btn-outline btn-sm">
+              <i class="fa fa-user"></i> Profile
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Match Modal -->
+  <div class="match-modal-overlay" *ngIf="showMatchModal" (click)="closeMatchModal()">
+    <div class="match-modal" (click)="$event.stopPropagation()">
+      <button class="close-modal" (click)="closeMatchModal()">
+        <i class="fa fa-times"></i>
+      </button>
+      
+      <div class="match-header">
+        <div class="match-icon">
+          <i class="fa fa-heart"></i>
+        </div>
+        <h2>It's a Match!</h2>
+        <p>You and {{ matchedUser?.username }} have liked each other</p>
+      </div>
+      
+      <div class="match-photos">
+        <div class="match-photo-container">
+          <div class="match-photo your-photo">
+            <img [src]="currentUser?.photoUrl || 'assets/images/default-avatar.jpg'" alt="Your photo">
+          </div>
+          <p>You</p>
+        </div>
+        
+        <div class="match-heart">
+          <i class="fa fa-heart"></i>
+        </div>
+        
+        <div class="match-photo-container">
+          <div class="match-photo">
+            <img [src]="matchedUser?.photoUrl || 'assets/images/default-avatar.jpg'" [alt]="matchedUser?.username">
+          </div>
+          <p>{{ matchedUser?.username }}</p>
+        </div>
+      </div>
+      
+      <div class="match-message">
+        <p>Get to know each other by sending a message!</p>
+      </div>
+      
+      <div class="match-actions">
+        <button class="btn-message" (click)="sendMessage(matchedUser!.id); closeMatchModal()">
+          <i class="fa fa-comment"></i> Send a Message
+        </button>
+        <button class="btn-keep-swiping" (click)="closeMatchModal()">
+          <i class="fa fa-refresh"></i> Keep Swiping
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

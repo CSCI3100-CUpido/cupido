@@ -1,0 +1,157 @@
+<!-- src/app/components/match/match-settings.component.html -->
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Match Preferences</h2>
+        <a [routerLink]="['/match']" class="btn btn-outline-secondary">
+          <i class="bi bi-arrow-left"></i> Back to Matches
+        </a>
+      </div>
+      
+      <!-- Error message -->
+      <div *ngIf="errorMessage" class="alert alert-danger">
+        {{ errorMessage }}
+        <button type="button" class="btn-close float-end" (click)="errorMessage = null"></button>
+      </div>
+      
+      <!-- Success message -->
+      <div *ngIf="successMessage" class="alert alert-success">
+        {{ successMessage }}
+        <button type="button" class="btn-close float-end" (click)="successMessage = null"></button>
+      </div>
+      
+      <!-- Loading spinner -->
+      <div *ngIf="isLoading" class="text-center my-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading your preferences...</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="row" *ngIf="!isLoading">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <form [formGroup]="settingsForm" (ngSubmit)="savePreferences()">
+            <!-- Age Range -->
+            <div class="mb-4">
+              <h5>Age Range</h5>
+              <p class="text-muted">Select the age range of people you'd like to see</p>
+              
+              <div class="row">
+                <div class="col-md-6">
+                  <label for="minAge" class="form-label">Minimum Age</label>
+                  <div class="d-flex align-items-center">
+                    <input type="range" class="form-range flex-grow-1 me-2" id="minAge" 
+                           min="18" max="50" step="1" 
+                           [value]="settingsForm.get('minAge')?.value"
+                           (input)="onMinAgeChange($event)">
+                    <span class="age-value">{{ settingsForm.get('minAge')?.value }}</span>
+                  </div>
+                </div>
+                
+                <div class="col-md-6">
+                  <label for="maxAge" class="form-label">Maximum Age</label>
+                  <div class="d-flex align-items-center">
+                    <input type="range" class="form-range flex-grow-1 me-2" id="maxAge" 
+                           min="18" max="50" step="1" 
+                           [value]="settingsForm.get('maxAge')?.value"
+                           (input)="onMaxAgeChange($event)">
+                    <span class="age-value">{{ settingsForm.get('maxAge')?.value }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Gender Preference -->
+            <div class="mb-4" formGroupName="genderPreference">
+              <h5>Gender Preference</h5>
+              <p class="text-muted">Select the genders you'd like to see</p>
+              
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="male" formControlName="male">
+                    <label class="form-check-label" for="male">
+                      Men
+                    </label>
+                  </div>
+                </div>
+                
+                <div class="col-md-4">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="female" formControlName="female">
+                    <label class="form-check-label" for="female">
+                      Women
+                    </label>
+                  </div>
+                </div>
+                
+                <div class="col-md-4">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="other" formControlName="other">
+                    <label class="form-check-label" for="other">
+                      Non-binary
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Interests -->
+            <div class="mb-4">
+              <h5>Interests</h5>
+              <p class="text-muted">Select your interests to find better matches</p>
+              
+              <div class="interest-selector">
+                <div *ngFor="let interest of allInterests" 
+                     class="interest-chip" 
+                     [class.selected]="isInterestSelected(interest)"
+                     (click)="toggleInterest(interest)">
+                  {{ interest }}
+                </div>
+              </div>
+              
+              <div *ngIf="settingsForm.get('interests')?.value?.length === 0" class="text-muted mt-2">
+                <small>Tip: Selecting interests helps us find better matches for you</small>
+              </div>
+            </div>
+            
+            <!-- Campus Preference -->
+            <div class="mb-4">
+              <h5>Campus Preference</h5>
+              <p class="text-muted">Select campuses where you'd like to meet people</p>
+              
+              <div class="campus-selector">
+                <div *ngFor="let campus of campuses" 
+                     class="campus-chip" 
+                     [class.selected]="isCampusSelected(campus)"
+                     (click)="toggleCampus(campus)">
+                  {{ campus }}
+                </div>
+              </div>
+              
+              <div *ngIf="settingsForm.get('campusPreference')?.value?.length === 0" class="text-warning mt-2">
+                <small>Please select at least one campus</small>
+              </div>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="form-actions">
+              <button type="button" class="btn btn-outline-secondary" (click)="resetForm()">
+                Reset
+              </button>
+              <button type="submit" class="btn btn-primary" [disabled]="settingsForm.invalid || isSaving">
+                <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Save Preferences
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
