@@ -1,3 +1,4 @@
+// src/app/components/home/home.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -25,5 +26,15 @@ export class HomeComponent implements OnInit {
         this.isLoggedIn = !!user;
       }
     );
+  }
+
+  goToMatch(): void {
+    if (this.isLoggedIn) {
+      this.router.navigate(['/match']);
+    } else {
+      this.router.navigate(['/auth/login'], { 
+        queryParams: { returnUrl: '/match' } 
+      });
+    }
   }
 }

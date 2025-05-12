@@ -7,7 +7,7 @@
       <p>Connect with like-minded students at CUHK, share your thoughts anonymously, and discover meaningful relationships.</p>
       
       <div class="hero-actions">
-        <a routerLink="/register" class="btn-primary">Join Now</a>
+        <a (click)="goToMatch()" class="btn-primary">Join Now</a>
         <a routerLink="/confessions" class="btn-secondary">Read Confessions</a>
       </div>
     </div>
@@ -42,7 +42,7 @@
         <div class="feature-icon">
           <i class="fa fa-heart"></i>
         </div>
-        <h3>Dating Recommendations</h3>
+        <h3>Match</h3>
         <p>Get personalized recommendations based on your interests and preferences.</p>
       </div>
       
@@ -61,7 +61,7 @@
     <div class="cta-content">
       <h2>Ready to Find Your Match?</h2>
       <p>Join thousands of CUHK students already on the platform.</p>
-      <a routerLink="/register" class="btn-primary">Create Account</a>
+      <a (click)="goToMatch()" class="btn-primary">Create Account</a>
     </div>
   </section>
 </div>
