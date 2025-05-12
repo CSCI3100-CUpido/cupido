@@ -1,0 +1,59 @@
+<!-- src/app/components/auth/verification-code/verification-code.component.html -->
+<div class="verify-container">
+  <div class="verify-card">
+    <div class="verify-icon">
+      <i class="fa fa-shield"></i>
+    </div>
+    
+    <div class="verify-content">
+      <h2>Verify Your Email</h2>
+      <p>We've sent a verification code to:</p>
+      <p class="email">{{ currentEmail }}</p>
+      
+      <form [formGroup]="verificationForm" (ngSubmit)="verifyCode()">
+        <div class="form-group">
+          <label for="code">Enter Verification Code</label>
+          <input 
+            type="text" 
+            id="code" 
+            formControlName="code" 
+            class="code-input"
+            [class.is-invalid]="verificationForm.get('code')?.invalid && verificationForm.get('code')?.touched"
+            placeholder="Enter 6-digit code"
+            autocomplete="off"
+          >
+          <div class="validation-feedback" *ngIf="verificationForm.get('code')?.invalid && verificationForm.get('code')?.touched">
+            <span *ngIf="verificationForm.get('code')?.errors?.['required']">Verification code is required</span>
+            <span *ngIf="verificationForm.get('code')?.errors?.['minlength'] || verificationForm.get('code')?.errors?.['maxlength']">Code must be 6 digits</span>
+            <span *ngIf="verificationForm.get('code')?.errors?.['pattern']">Code must contain only numbers</span>
+          </div>
+        </div>
+        
+        <div class="timer-section" *ngIf="remainingTime > 0">
+          <p>Code expires in: <span class="timer">{{ formatTime(remainingTime) }}</span></p>
+        </div>
+        
+        <div class="expired-section" *ngIf="remainingTime <= 0">
+          <p class="expired">This verification code has expired.</p>
+        </div>
+        
+        <div class="feedback-section">
+          <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
+          <p class="success-message" *ngIf="successMessage">{{ successMessage }}</p>
+        </div>
+        
+        <div class="verify-actions">
+          <button type="submit" class="btn-primary" [disabled]="verificationForm.invalid || isSubmitting || remainingTime <= 0">
+            {{ isSubmitting ? 'Verifying...' : 'Verify My Email' }}
+          </button>
+          
+          <button type="button" class="btn-secondary" (click)="resendCode()" [disabled]="isSubmitting">
+            Resend Code
+          </button>
+          
+          <a class="btn-link" (click)="goToLogin()">Back to Login</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

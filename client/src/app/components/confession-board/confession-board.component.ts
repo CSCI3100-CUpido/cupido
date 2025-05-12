@@ -14,7 +14,6 @@ import { ConfessionService } from '../../services/confession.service';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    RouterLink,
     DatePipe,
     HttpClientModule
   ],
