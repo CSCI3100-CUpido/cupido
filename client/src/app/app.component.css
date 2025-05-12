@@ -1,0 +1,38 @@
+/* app.component.css */
+.app-container {
+  min-height: calc(100vh - 120px); /* Adjust for header and footer height */
+  position: relative;
+  z-index: 1; /* Ensure content is stacked properly */
+  padding: 1rem;
+}
+
+/* Fix for router-outlet to ensure its contents are clickable */
+router-outlet + * {
+  position: relative;
+  z-index: 2;
+  display: block;
+}
+
+/* Global fixes for clickable elements */
+a, button, .btn, [role="button"], input[type="button"], input[type="submit"], input[type="reset"] {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 2;
+}
+
+/* Fix for any global overlays */
+.modal, .overlay, .dropdown-menu {
+  position: absolute;
+  z-index: 1050; /* Above most content */
+}
+
+/* Ensure all content is interactive by default */
+* {
+  pointer-events: auto;
+}
+
+/* Only set pointer-events: none on specific non-interactive elements if needed */
+.non-interactive {
+  pointer-events: none;
+}

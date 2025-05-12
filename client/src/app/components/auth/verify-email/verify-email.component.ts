@@ -1,7 +1,7 @@
+// src/app/components/auth/verify-email/verify-email.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
-import { ActivatedRoute, Router } from '@angular/router';
+import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 
 @Component({
@@ -41,11 +41,24 @@ export class VerifyEmailComponent implements OnInit {
       try {
         const user = JSON.parse(userString);
         this.currentEmail = user.email || 'your CUHK email address';
+        
+        // For demo purposes, check if email is already verified
+        if (user.isEmailVerified) {
+          this.isVerified = true;
+        }
       } catch (error) {
         this.currentEmail = 'your CUHK email address';
       }
     } else {
       this.currentEmail = 'your CUHK email address';
+    }
+    
+    // For demo purposes, simulate successful verification after 3 seconds
+    if (!this.isVerified && !this.isTokenVerification) {
+      setTimeout(() => {
+        // Show verification code option
+        this.router.navigate(['/auth/verification-code']);
+      }, 3000);
     }
   }
 
@@ -89,6 +102,9 @@ export class VerifyEmailComponent implements OnInit {
       next: () => {
         this.isResending = false;
         console.log('Verification email has been resent. Please check your inbox.');
+        
+        // For demo purposes, navigate to verification code page
+        this.router.navigate(['/auth/verification-code']);
       },
       error: (error) => {
         this.isResending = false;
