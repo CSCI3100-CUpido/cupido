@@ -1,0 +1,330 @@
+<!-- src/app/components/match/match.component.html -->
+<div class="match-container">
+  <!-- Tab navigation -->
+  <div class="tabs-container">
+    <ul class="nav nav-tabs">
+      <li class="nav-item">
+        <a class="nav-link" [class.active]="activeTab === 'discover'" (click)="switchTab('discover')">
+          <i class="bi bi-search"></i> Discover
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" [class.active]="activeTab === 'matches'" (click)="switchTab('matches')">
+          <i class="bi bi-heart-fill"></i> Matches
+          <span class="badge bg-primary" *ngIf="mutualMatches.length > 0">{{mutualMatches.length}}</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" [class.active]="activeTab === 'liked'" (click)="switchTab('liked')">
+          <i class="bi bi-heart"></i> Liked
+          <span class="badge bg-secondary" *ngIf="likedUsers.length > 0">{{likedUsers.length}}</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" [class.active]="activeTab === 'likedBy'" (click)="switchTab('likedBy')">
+          <i class="bi bi-person-heart"></i> Likes You
+          <span class="badge bg-danger" *ngIf="likedByUsers.length > 0">{{likedByUsers.length}}</span>
+        </a>
+      </li>
+      <li class="nav-item ms-auto">
+        <a class="nav-link" [routerLink]="['/match/settings']">
+          <i class="bi bi-gear"></i> Settings
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Error message -->
+  <div *ngIf="errorMessage" class="alert alert-danger mt-3">
+    {{ errorMessage }}
+    <button type="button" class="btn-close float-end" (click)="errorMessage = null"></button>
+  </div>
+
+  <!-- Loading spinner -->
+  <div *ngIf="isLoading" class="text-center my-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2">Loading matches...</p>
+  </div>
+
+  <!-- Discover tab content -->
+  <div *ngIf="activeTab === 'discover' && !isLoading">
+    <div class="card-stack-container" *ngIf="potentialMatches.length > 0 && currentCardIndex < potentialMatches.length">
+      <!-- Card stack -->
+      <div class="card-stack">
+        <div class="match-card" [class.swipe-left]="swipeDirection === 'left'" [class.swipe-right]="swipeDirection === 'right'">
+          <div class="card">
+            <img [src]="potentialMatches[currentCardIndex].photoUrl || 'assets/images/default-avatar.jpg'" 
+                 class="card-img-top" alt="User photo">
+            <div class="card-body">
+              <div class="user-info">
+                <h3 class="card-title">
+                  {{ potentialMatches[currentCardIndex].username }}, {{ potentialMatches[currentCardIndex].age }}
+                </h3>
+                <span class="compatibility-score">
+                  <i class="bi bi-stars"></i> {{ potentialMatches[currentCardIndex].compatibilityScore }}% Match
+                </span>
+              </div>
+              
+              <p class="card-text">{{ potentialMatches[currentCardIndex].bio }}</p>
+              
+              <div class="location mt-2">
+                <i class="bi bi-geo-alt"></i> {{ potentialMatches[currentCardIndex].city }}
+              </div>
+              
+              <div class="interests mt-3">
+                <h6>Interests</h6>
+                <div class="interest-tags">
+                  <span class="interest-tag" *ngFor="let interest of potentialMatches[currentCardIndex].interests">
+                    {{ interest }}
+                  </span>
+                </div>
+                
+                <div *ngIf="potentialMatches[currentCardIndex].matchingInterests.length > 0" class="matching-interests mt-2">
+                  <h6>You both like</h6>
+                  <div class="interest-tags">
+                    <span class="interest-tag matching" *ngFor="let interest of potentialMatches[currentCardIndex].matchingInterests">
+                      {{ interest }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card-actions">
+            <button class="btn btn-outline-danger" (click)="passUser(potentialMatches[currentCardIndex])">
+              <i class="bi bi-x-lg"></i>
+            </button>
+            <button class="btn btn-primary" (click)="likeUser(potentialMatches[currentCardIndex])">
+              <i class="bi bi-heart"></i> Like
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- No more users message -->
+    <div *ngIf="noMoreUsers || (potentialMatches.length > 0 && currentCardIndex >= potentialMatches.length)" class="no-more-users">
+      <div class="card text-center p-5">
+        <i class="bi bi-emoji-smile display-4 mb-3"></i>
+        <h3>No more matches right now</h3>
+        <p>Check back later or adjust your preferences to see more people.</p>
+        <button class="btn btn-primary mt-3" (click)="refreshMatches()">
+          <i class="bi bi-arrow-repeat"></i> Refresh
+        </button>
+        <a [routerLink]="['/match/settings']" class="btn btn-outline-secondary mt-2">
+          Adjust Preferences
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Matches tab content -->
+  <div *ngIf="activeTab === 'matches' && !isLoading">
+    <div *ngIf="mutualMatches.length === 0" class="no-matches text-center my-5">
+      <i class="bi bi-heart-fill display-4 text-muted mb-3"></i>
+      <h3>No matches yet</h3>
+      <p>When you and someone else both like each other, they'll appear here.</p>
+    </div>
+    
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" *ngIf="mutualMatches.length > 0">
+      <div class="col" *ngFor="let user of mutualMatches">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>
+              <i class="bi bi-circle-fill" [class.text-success]="user.isOnline" [class.text-secondary]="!user.isOnline"></i>
+              {{ user.isOnline ? 'Online' : 'Offline' }}
+            </span>
+            <span class="text-end">
+              <i class="bi bi-stars"></i> {{ user.compatibilityScore }}% Match
+            </span>
+          </div>
+          
+          <img [src]="user.photoUrl || 'assets/images/default-avatar.jpg'" class="card-img-top" alt="User photo">
+          
+          <div class="card-body">
+            <h5 class="card-title">{{ user.username }}, {{ user.age }}</h5>
+            <p class="card-text">{{ user.bio }}</p>
+            
+            <div class="location mb-2">
+              <i class="bi bi-geo-alt"></i> {{ user.city }}
+            </div>
+            
+            <div class="matching-interests" *ngIf="user.matchingInterests.length > 0">
+              <h6>You both like</h6>
+              <div class="interest-tags">
+                <span class="interest-tag matching" *ngFor="let interest of user.matchingInterests.slice(0, 5)">
+                  {{ interest }}
+                </span>
+                <span *ngIf="user.matchingInterests.length > 5">+{{ user.matchingInterests.length - 5 }} more</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card-footer">
+            <div class="d-grid gap-2">
+              <button class="btn btn-primary" (click)="navigateToChat(user.id)">
+                <i class="bi bi-chat"></i> Message
+              </button>
+              <a [routerLink]="['/profile', user.id]" class="btn btn-outline-secondary">
+                <i class="bi bi-person"></i> View Profile
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Liked tab content -->
+  <div *ngIf="activeTab === 'liked' && !isLoading">
+    <div *ngIf="likedUsers.length === 0" class="no-likes text-center my-5">
+      <i class="bi bi-heart display-4 text-muted mb-3"></i>
+      <h3>You haven't liked anyone yet</h3>
+      <p>When you like someone, they'll appear here.</p>
+    </div>
+    
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" *ngIf="likedUsers.length > 0">
+      <div class="col" *ngFor="let user of likedUsers">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>
+              <i class="bi bi-circle-fill" [class.text-success]="user.isOnline" [class.text-secondary]="!user.isOnline"></i>
+              {{ user.isOnline ? 'Online' : 'Offline' }}
+            </span>
+            <span class="text-end">
+              <i class="bi bi-stars"></i> {{ user.compatibilityScore }}% Match
+            </span>
+          </div>
+          
+          <img [src]="user.photoUrl || 'assets/images/default-avatar.jpg'" class="card-img-top" alt="User photo">
+          
+          <div class="card-body">
+            <h5 class="card-title">{{ user.username }}, {{ user.age }}</h5>
+            <p class="card-text">{{ user.bio }}</p>
+            
+            <div class="location mb-2">
+              <i class="bi bi-geo-alt"></i> {{ user.city }}
+            </div>
+            
+            <div class="matching-interests" *ngIf="user.matchingInterests.length > 0">
+              <h6>You both like</h6>
+              <div class="interest-tags">
+                <span class="interest-tag matching" *ngFor="let interest of user.matchingInterests.slice(0, 5)">
+                  {{ interest }}
+                </span>
+                <span *ngIf="user.matchingInterests.length > 5">+{{ user.matchingInterests.length - 5 }} more</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card-footer">
+            <div class="d-grid gap-2">
+              <button class="btn btn-danger" (click)="toggleLike(user)">
+                <i class="bi bi-heart-fill"></i> Unlike
+              </button>
+              <a [routerLink]="['/profile', user.id]" class="btn btn-outline-secondary">
+                <i class="bi bi-person"></i> View Profile
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Liked By tab content -->
+  <div *ngIf="activeTab === 'likedBy' && !isLoading">
+    <div *ngIf="likedByUsers.length === 0" class="no-likes text-center my-5">
+      <i class="bi bi-person-heart display-4 text-muted mb-3"></i>
+      <h3>No one has liked you yet</h3>
+      <p>When someone likes you, they'll appear here.</p>
+    </div>
+    
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" *ngIf="likedByUsers.length > 0">
+      <div class="col" *ngFor="let user of likedByUsers">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>
+              <i class="bi bi-circle-fill" [class.text-success]="user.isOnline" [class.text-secondary]="!user.isOnline"></i>
+              {{ user.isOnline ? 'Online' : 'Offline' }}
+            </span>
+            <span class="text-end">
+              <i class="bi bi-stars"></i> {{ user.compatibilityScore }}% Match
+            </span>
+          </div>
+          
+          <img [src]="user.photoUrl || 'assets/images/default-avatar.jpg'" class="card-img-top" alt="User photo">
+          
+          <div class="card-body">
+            <h5 class="card-title">{{ user.username }}, {{ user.age }}</h5>
+            <p class="card-text">{{ user.bio }}</p>
+            
+            <div class="location mb-2">
+              <i class="bi bi-geo-alt"></i> {{ user.city }}
+            </div>
+            
+            <div class="matching-interests" *ngIf="user.matchingInterests.length > 0">
+              <h6>You both like</h6>
+              <div class="interest-tags">
+                <span class="interest-tag matching" *ngFor="let interest of user.matchingInterests.slice(0, 5)">
+                  {{ interest }}
+                </span>
+                <span *ngIf="user.matchingInterests.length > 5">+{{ user.matchingInterests.length - 5 }} more</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card-footer">
+            <div class="d-grid gap-2">
+              <button class="btn" [class.btn-primary]="!isUserLiked(user.id)" [class.btn-success]="isUserLiked(user.id)" (click)="toggleLike(user)">
+                <i class="bi" [class.bi-heart]="!isUserLiked(user.id)" [class.bi-heart-fill]="isUserLiked(user.id)"></i>
+                {{ isUserLiked(user.id) ? 'Matched' : 'Like Back' }}
+              </button>
+              <a [routerLink]="['/profile', user.id]" class="btn btn-outline-secondary">
+                <i class="bi bi-person"></i> View Profile
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Match Notification Modal -->
+  <div class="match-notification" *ngIf="showMatchNotification && matchedUser">
+    <div class="match-modal">
+      <div class="match-header">
+        <button type="button" class="btn-close float-end" (click)="closeMatchNotification()"></button>
+        <h2 class="text-center"><i class="bi bi-stars"></i> It's a Match! <i class="bi bi-stars"></i></h2>
+        <p class="text-center">You and {{ matchedUser.username }} have liked each other</p>
+      </div>
+      
+      <div class="match-body">
+        <div class="row">
+          <div class="col-6 text-center">
+            <img class="match-user-photo" src="assets/images/default-avatar.jpg" alt="Your photo">
+            <p>You</p>
+          </div>
+          <div class="col-6 text-center">
+            <img class="match-user-photo" [src]="matchedUser.photoUrl || 'assets/images/default-avatar.jpg'" alt="Match photo">
+            <p>{{ matchedUser.username }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="match-footer">
+        <div class="d-grid gap-2">
+          <button class="btn btn-primary" (click)="navigateToChat(matchedUser.id); closeMatchNotification()">
+            <i class="bi bi-chat"></i> Send a Message
+          </button>
+          <button class="btn btn-outline-secondary" (click)="closeMatchNotification()">
+            Keep Swiping
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

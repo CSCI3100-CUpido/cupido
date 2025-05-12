@@ -1,0 +1,91 @@
+/* src/app/components/match/match-settings.component.css */
+.age-value {
+  min-width: 30px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.interest-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.interest-chip {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+}
+
+.interest-chip:hover {
+  background-color: #e9ecef;
+}
+
+.interest-chip.selected {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.campus-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.campus-chip {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+}
+
+.campus-chip:hover {
+  background-color: #e9ecef;
+}
+
+.campus-chip.selected {
+  background-color: #28a745;
+  color: white;
+  border-color: #28a745;
+}
+
+.form-actions {
+  margin-top: 30px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Fix for clickable elements */
+button, 
+.btn, 
+.interest-chip, 
+.campus-chip, 
+.form-check-input {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* Make sure form controls are accessible */
+input[type="range"]::-webkit-slider-thumb {
+  cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+  cursor: pointer;
+}
+
+input[type="range"]::-ms-thumb {
+  cursor: pointer;
+}

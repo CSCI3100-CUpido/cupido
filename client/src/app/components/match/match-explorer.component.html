@@ -1,0 +1,193 @@
+<!-- src/app/components/match/match-explorer.component.html -->
+<div class="explorer-container">
+  <div class="explorer-header">
+    <h2>Explore Matches</h2>
+    <p>Discover potential matches based on your interests and preferences</p>
+  </div>
+  
+  <!-- Search and Filter Bar -->
+  <div class="filter-bar">
+    <div class="search-box">
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
+        (ngModelChange)="applyFilters()" 
+        placeholder="Search by name or bio"
+        class="search-input"
+      >
+      <i class="fa fa-search search-icon"></i>
+    </div>
+    
+    <div class="filter-buttons">
+      <button class="filter-button" (click)="clearFilters()">
+        <i class="fa fa-refresh"></i> Reset
+      </button>
+    </div>
+  </div>
+  
+  <!-- Filter Section -->
+  <div class="filters-section">
+    <div class="filter-group">
+      <h4>Age Range</h4>
+      <div class="age-slider">
+        <div class="age-range">
+          <span>{{ minAge }}</span>
+          <span>{{ maxAge }}</span>
+        </div>
+        <div class="sliders">
+          <input 
+            type="range" 
+            [(ngModel)]="minAge" 
+            (ngModelChange)="applyFilters()" 
+            min="18" 
+            max="50" 
+            class="range-slider"
+          >
+          <input 
+            type="range" 
+            [(ngModel)]="maxAge" 
+            (ngModelChange)="applyFilters()" 
+            min="18" 
+            max="50" 
+            class="range-slider"
+          >
+        </div>
+      </div>
+    </div>
+    
+    <div class="filter-group">
+      <h4>Campus</h4>
+      <select 
+        [(ngModel)]="selectedCampus" 
+        (ngModelChange)="applyFilters()" 
+        class="select-dropdown"
+      >
+        <option *ngFor="let campus of campuses" [value]="campus">{{ campus }}</option>
+      </select>
+    </div>
+    
+    <div class="filter-group">
+      <h4>Online Status</h4>
+      <label class="toggle-switch">
+        <input 
+          type="checkbox" 
+          [(ngModel)]="onlineOnly" 
+          (ngModelChange)="applyFilters()"
+        >
+        <span class="toggle-slider"></span>
+        <span class="toggle-label">Show online only</span>
+      </label>
+    </div>
+  </div>
+  
+  <!-- Interests Filter -->
+  <div class="interests-filter">
+    <h4>Filter by Interests</h4>
+    <div class="interest-tags">
+      <span 
+        *ngFor="let interest of allInterests"
+        class="interest-tag"
+        [class.selected]="isInterestSelected(interest)"
+        (click)="toggleInterestFilter(interest)"
+      >
+        {{ interest }}
+      </span>
+    </div>
+  </div>
+  
+  <!-- Loading Indicator -->
+  <div class="loading-container" *ngIf="isLoading">
+    <div class="loader"></div>
+    <p>Finding your matches...</p>
+  </div>
+  
+  <!-- Error Message -->
+  <div class="error-message" *ngIf="errorMessage && !isLoading">
+    <i class="fa fa-exclamation-circle"></i>
+    <p>{{ errorMessage }}</p>
+    <button class="refresh-button" (click)="refreshMatches()">
+      <i class="fa fa-refresh"></i> Try Again
+    </button>
+  </div>
+  
+  <!-- No Matches Message -->
+  <div class="no-matches" *ngIf="filteredMatches.length === 0 && !isLoading && !errorMessage">
+    <div class="no-matches-icon">
+      <i class="fa fa-search"></i>
+    </div>
+    <h3>No matches found</h3>
+    <p>Try adjusting your filters or preferences to see more people.</p>
+    <button class="refresh-button" (click)="refreshMatches()">
+      <i class="fa fa-refresh"></i> Refresh Matches
+    </button>
+  </div>
+  
+  <!-- Matches Grid -->
+  <div class="matches-grid" *ngIf="filteredMatches.length > 0 && !isLoading">
+    <div class="match-card" *ngFor="let match of filteredMatches">
+      <div class="match-photo">
+        <img [src]="match.photoUrl || 'assets/images/default-avatar.jpg'" [alt]="match.username">
+        <div class="match-online-status" [class.online]="match.isOnline">
+          {{ match.isOnline ? 'Online' : 'Offline' }}
+        </div>
+      </div>
+      
+      <div class="match-info">
+        <div class="match-header">
+          <h3>{{ match.username }}, {{ match.age }}</h3>
+          <div class="match-compatibility">
+            <span>{{ match.compatibilityScore }}%</span>
+            <div class="compatibility-bar">
+              <div class="compatibility-fill" [style.width.%]="match.compatibilityScore"></div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="match-details">
+          <p class="match-location">
+            <i class="fa fa-map-marker"></i> {{ match.city }}
+          </p>
+          <p class="match-campus">
+            <i class="fa fa-university"></i> {{ match.campus }}
+          </p>
+          <p class="match-shared">
+            <i class="fa fa-heart"></i> {{ calculateSharedInterestsText(match) }}
+          </p>
+        </div>
+        
+        <div class="match-bio" *ngIf="match.bio">
+          <p>{{ match.bio | slice:0:100 }}{{ match.bio.length > 100 ? '...' : '' }}</p>
+        </div>
+        
+        <div class="match-interests">
+          <span class="interest-chip" *ngFor="let interest of match.matchingInterests.slice(0, 3)">
+            {{ interest }}
+          </span>
+          <span class="more-interests" *ngIf="match.matchingInterests.length > 3">
+            +{{ match.matchingInterests.length - 3 }} more
+          </span>
+        </div>
+      </div>
+      
+      <div class="match-actions">
+        <button 
+          *ngIf="!match.isLiked" 
+          class="like-button" 
+          (click)="likeUser(match, $event)"
+        >
+          <i class="fa fa-heart-o"></i> Like
+        </button>
+        <button 
+          *ngIf="match.isLiked" 
+          class="unlike-button" 
+          (click)="unlikeUser(match, $event)"
+        >
+          <i class="fa fa-heart"></i> Unlike
+        </button>
+        <a [routerLink]="['/profile', match.id]" class="view-profile">
+          View Profile
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

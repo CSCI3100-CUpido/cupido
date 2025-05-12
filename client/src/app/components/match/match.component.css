@@ -1,0 +1,302 @@
+/* src/app/components/match/match.component.css */
+.match-container {
+  padding: 15px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Tab Navigation */
+.tabs-container {
+  margin-bottom: 20px;
+}
+
+.nav-tabs {
+  border-bottom: 1px solid #dee2e6;
+}
+
+.nav-tabs .nav-link {
+  margin-bottom: -1px;
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-top-left-radius: 0.25rem;
+  border-top-right-radius: 0.25rem;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.nav-tabs .nav-link:hover,
+.nav-tabs .nav-link:focus {
+  border-color: #e9ecef #e9ecef #dee2e6;
+  color: #495057;
+}
+
+.nav-tabs .nav-link.active {
+  color: #495057;
+  background-color: #fff;
+  border-color: #dee2e6 #dee2e6 #fff;
+}
+
+.nav-tabs .nav-item.show .nav-link {
+  color: #495057;
+  background-color: #fff;
+  border-color: #dee2e6 #dee2e6 #fff;
+}
+
+/* Card Stack */
+.card-stack-container {
+  position: relative;
+  min-height: 500px;
+  margin-bottom: 20px;
+}
+
+.card-stack {
+  position: relative;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.match-card {
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+.match-card.swipe-left {
+  transform: translateX(-100%) rotate(-10deg);
+  opacity: 0;
+}
+
+.match-card.swipe-right {
+  transform: translateX(100%) rotate(10deg);
+  opacity: 0;
+}
+
+.match-card .card {
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.match-card .card-img-top {
+  height: 300px;
+  object-fit: cover;
+}
+
+.card-actions {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+
+.card-actions button {
+  width: 120px;
+  border-radius: 25px;
+  padding: 10px 20px;
+  font-weight: bold;
+}
+
+/* User Info */
+.user-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.compatibility-score {
+  font-size: 14px;
+  color: #6c757d;
+  background: #f8f9fa;
+  padding: 4px 8px;
+  border-radius: 20px;
+}
+
+.location {
+  font-size: 14px;
+  color: #6c757d;
+}
+
+/* Interests */
+.interests {
+  margin-top: 15px;
+}
+
+.interest-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.interest-tag {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.interest-tag.matching {
+  background-color: #e0f7fa;
+  color: #0097a7;
+}
+
+/* No More Users */
+.no-more-users,
+.no-matches,
+.no-likes {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* Match Notification */
+.match-notification {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
+}
+
+.match-modal {
+  background-color: white;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 500px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.match-header {
+  background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+  color: white;
+  padding: 20px;
+  position: relative;
+}
+
+.match-header h2 {
+  margin-bottom: 10px;
+}
+
+.match-body {
+  padding: 30px 20px;
+}
+
+.match-user-photo {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #fff;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  margin-bottom: 10px;
+}
+
+.match-footer {
+  padding: 20px;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* Settings Form */
+.settings-form {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.age-slider-container {
+  margin: 30px 0;
+}
+
+.age-range-values {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.interest-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.interest-chip {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid #dee2e6;
+}
+
+.interest-chip.selected {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.campus-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.campus-chip {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid #dee2e6;
+}
+
+.campus-chip.selected {
+  background-color: #28a745;
+  color: white;
+  border-color: #28a745;
+}
+
+.form-actions {
+  margin-top: 30px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Additional Styles for Card Views */
+.card h5.card-title {
+  font-weight: 600;
+}
+
+.card-footer {
+  background-color: #fff;
+  border-top: 1px solid rgba(0, 0, 0, 0.125);
+  padding: 15px;
+}
+
+/* Fix for clickable elements */
+.nav-link, 
+button, 
+a {
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+}
+
+/* Fix for overlapping elements that might block clicks */
+.card, .row, .col, .container, .nav-tabs {
+  position: relative;
+  z-index: auto;
+}
+
+/* Ensure buttons are clickable */
+button, 
+.btn, 
+a.btn {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
