@@ -1,0 +1,265 @@
+<!-- src/app/components/profile/profile.component.html -->
+<div class="profile-container">
+  <!-- Loading Indicator -->
+  <div class="loading-indicator" *ngIf="isLoading">
+    <div class="loader"></div>
+    <p>Loading profile...</p>
+  </div>
+  
+  <!-- User Not Found -->
+  <div class="error-message" *ngIf="errorMessage && !isLoading">
+    <div class="error-icon">
+      <i class="fa fa-exclamation-circle"></i>
+    </div>
+    <h3>{{ errorMessage }}</h3>
+    <button class="btn-primary" routerLink="/home">Go to Home</button>
+  </div>
+  
+  <!-- Profile Content -->
+  <div class="profile-content" *ngIf="user && !isLoading">
+    <div class="profile-header">
+      <div class="profile-avatar">
+        <img [src]="user.photoUrl || './assets/images/placeholder-profile.png'" [alt]="user.username" />
+        <div class="avatar-overlay" *ngIf="isCurrentUser && isEditing" (click)="uploadPhoto()">
+          <i class="fa fa-camera"></i>
+          <span>Change Photo</span>
+        </div>
+      </div>
+      
+      <div class="profile-name-info">
+        <h2>{{ user.username }}</h2>
+        <p class="activity-status">
+          <span>Last active {{ user.lastActive | timeago }}</span>
+        </p>
+        <p class="profile-location" *ngIf="user.city && user.country">
+          <i class="fa fa-map-marker"></i> {{ user.city }}, {{ user.country }}
+        </p>
+        <p class="profile-verification" *ngIf="user.isEmailVerified">
+          <i class="fa fa-check-circle"></i> Verified CUHK Student
+        </p>
+      </div>
+      
+      <div class="profile-actions" *ngIf="isCurrentUser">
+        <button 
+          class="btn-edit" 
+          *ngIf="!isEditing" 
+          (click)="toggleEditMode()">
+          <i class="fa fa-pencil"></i> Edit Profile
+        </button>
+        <button 
+          class="btn-save" 
+          *ngIf="isEditing" 
+          (click)="saveProfile()"
+          [disabled]="profileForm.invalid">
+          <i class="fa fa-check"></i> Save
+        </button>
+        <button 
+          class="btn-cancel" 
+          *ngIf="isEditing" 
+          (click)="toggleEditMode()">
+          <i class="fa fa-times"></i> Cancel
+        </button>
+        <button 
+          class="btn-admin" 
+          *ngIf="isAdmin()"
+          (click)="goToAdminPanel()">
+          <i class="fa fa-cog"></i> Admin Panel
+        </button>
+      </div>
+    </div>
+    
+    <!-- Success Message -->
+    <div class="success-message" *ngIf="successMessage">
+      <i class="fa fa-check-circle"></i> {{ successMessage }}
+    </div>
+    
+    <!-- Profile Tabs -->
+    <div class="profile-tabs">
+      <button 
+        [class.active]="viewMode === 'basic'" 
+        (click)="changeViewMode('basic')">
+        <i class="fa fa-user"></i> Basic Info
+      </button>
+      <button 
+        [class.active]="viewMode === 'interests'" 
+        (click)="changeViewMode('interests')">
+        <i class="fa fa-heart"></i> Interests
+      </button>
+      <button 
+        [class.active]="viewMode === 'settings'" 
+        (click)="changeViewMode('settings')"
+        *ngIf="isCurrentUser">
+        <i class="fa fa-cog"></i> Settings
+      </button>
+    </div>
+    
+    <!-- Profile Form -->
+    <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+      <!-- Basic Info Section -->
+      <div class="profile-section" *ngIf="viewMode === 'basic'">
+        <h3>Basic Information</h3>
+        
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input 
+            type="text" 
+            id="username" 
+            formControlName="username" 
+            [readonly]="!isEditing"
+            [class.readonly]="!isEditing"
+          />
+          <div class="form-error" *ngIf="profileForm.get('username')?.invalid && profileForm.get('username')?.touched">
+            Username is required (3-30 characters)
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input 
+            type="email" 
+            id="email" 
+            formControlName="email" 
+            readonly
+            class="readonly"
+          />
+          <div class="form-note">Email cannot be changed</div>
+        </div>
+        
+        <div class="form-group">
+          <label for="dateOfBirth">Date of Birth</label>
+          <input 
+            type="date" 
+            id="dateOfBirth" 
+            formControlName="dateOfBirth" 
+            [readonly]="!isEditing"
+            [class.readonly]="!isEditing"
+          />
+        </div>
+        
+        <div class="form-group">
+          <label for="gender">Gender</label>
+          <select 
+            id="gender" 
+            formControlName="gender" 
+            [disabled]="!isEditing"
+            [class.readonly]="!isEditing"
+          >
+            <option value="">Select Gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="city">City</label>
+          <input 
+            type="text" 
+            id="city" 
+            formControlName="city" 
+            [readonly]="!isEditing"
+            [class.readonly]="!isEditing"
+          />
+        </div>
+        
+        <div class="form-group">
+          <label for="country">Country</label>
+          <input 
+            type="text" 
+            id="country" 
+            formControlName="country" 
+            [readonly]="!isEditing"
+            [class.readonly]="!isEditing"
+          />
+        </div>
+        
+        <div class="form-group">
+          <label for="bio">Bio</label>
+          <textarea 
+            id="bio" 
+            formControlName="bio" 
+            [readonly]="!isEditing"
+            [class.readonly]="!isEditing"
+            rows="4"
+          ></textarea>
+          <div class="form-error" *ngIf="profileForm.get('bio')?.invalid && profileForm.get('bio')?.touched">
+            Bio cannot exceed 500 characters
+          </div>
+        </div>
+      </div>
+      
+      <!-- Interests Section -->
+      <div class="profile-section" *ngIf="viewMode === 'interests'">
+        <h3>Interests</h3>
+        <p class="section-note" *ngIf="isCurrentUser">Select interests to help find better matches</p>
+        
+        <div class="interests-container">
+          <div
+            *ngFor="let interest of allInterests"
+            class="interest-tag"
+            [class.selected]="isInterestSelected(interest)"
+            [class.clickable]="isEditing"
+            (click)="toggleInterest(interest)"
+          >
+            {{ interest }}
+          </div>
+        </div>
+        
+        <div class="no-interests" *ngIf="(profileForm.get('interests')?.value || []).length === 0">
+          <p *ngIf="isCurrentUser && !isEditing">You haven't added any interests yet. Click Edit to add some.</p>
+          <p *ngIf="isCurrentUser && isEditing">Click on interests above to select them.</p>
+          <p *ngIf="!isCurrentUser">This user hasn't added any interests yet.</p>
+        </div>
+      </div>
+      
+      <!-- Settings Section -->
+      <div class="profile-section" *ngIf="viewMode === 'settings' && isCurrentUser">
+        <h3>Account Settings</h3>
+        
+        <div class="settings-group">
+          <h4>Dating Preferences</h4>
+          <p>Set your dating preferences to find better matches</p>
+          <button type="button" class="btn-secondary" (click)="goToPreferences()">
+            <i class="fa fa-sliders"></i> Dating Preferences
+          </button>
+        </div>
+        
+        <div class="settings-group">
+          <h4>Privacy Settings</h4>
+          <div class="privacy-setting">
+            <label class="switch">
+              <input type="checkbox" checked>
+              <span class="slider round"></span>
+            </label>
+            <div class="setting-text">
+              <p>Show my profile in recommendations</p>
+              <span>Turn off to temporarily hide your profile</span>
+            </div>
+          </div>
+          
+          <div class="privacy-setting">
+            <label class="switch">
+              <input type="checkbox" checked>
+              <span class="slider round"></span>
+            </label>
+            <div class="setting-text">
+              <p>Show online status</p>
+              <span>Others can see when you're online</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="settings-group">
+          <h4>Account Actions</h4>
+          <button type="button" class="btn-warning">
+            <i class="fa fa-lock"></i> Change Password
+          </button>
+          
+          <button type="button" class="btn-danger">
+            <i class="fa fa-trash"></i> Delete Account
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

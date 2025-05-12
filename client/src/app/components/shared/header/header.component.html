@@ -13,7 +13,7 @@
           <a routerLink="/confessions" routerLinkActive="active">Confession Wall</a>
         </li>
         <li>
-          <a routerLink="/Date Recommendation" routerLinkActive="active">Date Matching</a>
+          <a routerLink="/match" routerLinkActive="active">Date Matching</a>
         </li>
         <li *ngIf="(currentUser$ | async)">
           <a routerLink="/messages" routerLinkActive="active">Messages</a>
@@ -22,8 +22,8 @@
     </nav>
     
     <div class="user-actions" *ngIf="!(currentUser$ | async)">
-      <a routerLink="/login" class="btn-login">Login</a>
-      <a routerLink="/register" class="btn-register">Register</a>
+      <a routerLink="/auth/login" class="btn-login">Login</a>
+      <a routerLink="/auth/register" class="btn-register">Register</a>
     </div>
     
     <div class="user-menu" *ngIf="(currentUser$ | async) as user">
@@ -43,6 +43,9 @@
         <a routerLink="/messages" (click)="closeDropdown()">
           <i class="message-icon"></i> Messages
           <span class="badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+        </a>
+        <a routerLink="/match" (click)="closeDropdown()">
+          <i class="match-icon"></i> Matches
         </a>
         <a routerLink="/settings" (click)="closeDropdown()">
           <i class="settings-icon"></i> Settings
@@ -68,7 +71,7 @@
         <a routerLink="/confessions" routerLinkActive="active" (click)="closeMobileMenu()">Confession Wall</a>
       </li>
       <li>
-        <a routerLink="/matches" routerLinkActive="active" (click)="closeMobileMenu()">Date Matching</a>
+        <a routerLink="/match" routerLinkActive="active" (click)="closeMobileMenu()">Date Matching</a>
       </li>
       <li *ngIf="(currentUser$ | async)">
         <a routerLink="/messages" routerLinkActive="active" (click)="closeMobileMenu()">Messages</a>
@@ -76,10 +79,10 @@
       
       <ng-container *ngIf="!(currentUser$ | async)">
         <li>
-          <a routerLink="/login" (click)="closeMobileMenu()">Login</a>
+          <a routerLink="/auth/login" (click)="closeMobileMenu()">Login</a>
         </li>
         <li>
-          <a routerLink="/register" (click)="closeMobileMenu()">Register</a>
+          <a routerLink="/auth/register" (click)="closeMobileMenu()">Register</a>
         </li>
       </ng-container>
       
