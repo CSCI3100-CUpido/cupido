@@ -5,17 +5,18 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { AuthService, User } from '../../services/auth.service';
 import { UserProfileService, UserProfile } from '../../services/user-profile.service';
-import { TimeagoPipe } from '../../pipes/timeago.pipe'; // 添加TimeagoPipe导入
+import { TimeagoPipe } from '../../pipes/timeago.pipe';
+import { NavigationService, AuthStep } from '../../services/navigation.service';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule, TimeagoPipe], // 添加TimeagoPipe到imports
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, TimeagoPipe],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.css']
 })
 export class ProfileComponent implements OnInit {
-  user: any; // 添加此属性以匹配HTML模板
+  user: any;
   isLoading: boolean = false;
   errorMessage: string = '';
   successMessage: string = '';
@@ -54,6 +55,7 @@ export class ProfileComponent implements OnInit {
     private formBuilder: FormBuilder,
     private authService: AuthService,
     private userProfileService: UserProfileService,
+    private navigationService: NavigationService,
     private router: Router,
     private route: ActivatedRoute
   ) {
@@ -67,8 +69,9 @@ export class ProfileComponent implements OnInit {
   ngOnInit(): void {
     this.isLoading = true;
     
-    // 检查是否为个人资料设置
-    this.isProfileSetup = this.router.url.includes('profile-setup');
+    // 检查是否为个人资料设置或从验证页面重定向而来
+    this.isProfileSetup = this.router.url.includes('profile-setup') ||
+                          this.navigationService.getCurrentStep() === AuthStep.ProfileSetup;
     
     // 获取当前用户
     this.currentUser = this.authService.getCurrentUser();
@@ -76,6 +79,12 @@ export class ProfileComponent implements OnInit {
     if (!this.currentUser) {
       this.router.navigate(['/auth/login']);
       return;
+    }
+    
+    // 如果处于设置模式，启用编辑
+    if (this.isProfileSetup) {
+      this.isEditing = true;
+      this.viewMode = 'basic'; // 从基本信息标签开始
     }
     
     // 从路由参数获取用户ID或使用当前用户ID
@@ -99,14 +108,16 @@ export class ProfileComponent implements OnInit {
         }
       }
       
+      // 初始化一个空表单（会在loadUserProfile成功后重新初始化）
+      this.initializeForm();
+      
+      // 加载用户资料
       this.loadUserProfile();
     });
-    
-    // 初始化表单（HTML模板需要）
-    this.initializeForm();
   }
 
-  initializeForm(): void {
+  // 修改 initializeForm 方法，添加参数指定要加载的资料和是否可编辑
+  initializeForm(profile?: any, editable: boolean = true): void {
     this.profileForm = this.formBuilder.group({
       username: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
@@ -118,24 +129,33 @@ export class ProfileComponent implements OnInit {
       interests: [[]]
     });
     
-    if (this.userProfile) {
+    if (profile) {
+      // 使用传入的资料初始化表单
       this.profileForm.patchValue({
-        username: this.userProfile.username,
-        email: this.userProfile.email,
-        dateOfBirth: this.formatDate(this.userProfile.dateOfBirth),
-        gender: this.userProfile.gender || '',
-        city: this.userProfile.city || '',
-        country: this.userProfile.country || '',
-        bio: this.userProfile.bio || '',
-        interests: this.userProfile.interests || []
+        username: profile.username,
+        email: profile.email,
+        dateOfBirth: this.formatDate(profile.dateOfBirth),
+        gender: profile.gender || '',
+        city: profile.city || '',
+        country: profile.country || '',
+        bio: profile.bio || '',
+        interests: profile.interests || []
       });
-    } else if (this.currentUser) {
-      // 如果没有用户资料但有当前用户，填充基本信息
+      
+      // 如果不可编辑，则设置表单为禁用状态
+      if (!editable) {
+        this.profileForm.disable();
+      }
+    } else if (this.currentUser && this.isOwnProfile) {
+      // 仅当查看自己的资料且没有其他资料可用时，才使用当前用户数据
       this.profileForm.patchValue({
         username: this.currentUser.username,
         email: this.currentUser.email,
         dateOfBirth: this.formatDate(this.currentUser.dateOfBirth),
         gender: this.currentUser.gender || '',
+        city: this.currentUser.city || 'Hong Kong',
+        country: this.currentUser.country || 'China',
+        bio: this.currentUser.bio || '',
         interests: this.currentUser.interests || []
       });
     }
@@ -148,19 +168,26 @@ export class ProfileComponent implements OnInit {
       return;
     }
     
+    console.log('Loading user profile for ID:', this.userId);
+    
     this.userProfileService.getUserProfile(this.userId).subscribe({
       next: (profile: UserProfile) => {
+        console.log('Profile loaded successfully:', profile);
         this.userProfile = profile;
-        this.user = profile; // 为HTML模板设置user属性
+        this.user = profile;
         this.isProfileComplete = profile.isProfileComplete;
         
+        // 重要修改：正确初始化表单
         if (this.isOwnProfile) {
-          this.initializeForm();
+          // 查看自己的资料，可编辑
+          this.initializeForm(profile, true);
           
-          // 如果个人资料不完整，获取完成步骤
           if (!profile.isProfileComplete) {
             this.loadCompletionSteps();
           }
+        } else {
+          // 查看他人的资料，只读模式
+          this.initializeForm(profile, false);
         }
         
         this.isLoading = false;
@@ -171,7 +198,8 @@ export class ProfileComponent implements OnInit {
         this.isLoading = false;
         
         // 如果是资料设置且出错，尝试使用当前用户信息初始化
-        if (this.isProfileSetup && this.currentUser) {
+        if ((this.isProfileSetup || this.isEditing) && this.currentUser) {
+          console.log('Creating user profile from current user:', this.currentUser);
           this.user = {
             id: this.currentUser.id,
             username: this.currentUser.username,
@@ -182,9 +210,12 @@ export class ProfileComponent implements OnInit {
             gender: this.currentUser.gender,
             interests: this.currentUser.interests || [],
             isProfileComplete: false,
-            lastActive: this.currentUser.lastActive // 添加lastActive属性
+            lastActive: this.currentUser.lastActive,
+            city: this.currentUser.city || 'Hong Kong',
+            country: this.currentUser.country || 'China',
+            bio: this.currentUser.bio || ''
           };
-          this.initializeForm();
+          this.initializeForm(this.user, this.isOwnProfile);
           this.isLoading = false;
           this.errorMessage = ''; // 清除错误消息
         }
@@ -230,7 +261,8 @@ export class ProfileComponent implements OnInit {
   }
 
   toggleInterest(interest: string): void {
-    if (!this.isEditing && !this.isProfileSetup) return;
+    // 只有当是自己的资料且正在编辑时才能切换兴趣
+    if (!this.isOwnProfile || (!this.isEditing && !this.isProfileSetup)) return;
     
     const interests = [...(this.profileForm.get('interests')?.value || [])];
     const index = interests.indexOf(interest);
@@ -251,6 +283,8 @@ export class ProfileComponent implements OnInit {
       Object.keys(this.profileForm.controls).forEach(key => {
         this.profileForm.get(key)?.markAsTouched();
       });
+      
+      console.log('Form is invalid:', this.profileForm.errors);
       return;
     }
     
@@ -263,8 +297,11 @@ export class ProfileComponent implements OnInit {
       dateOfBirth: new Date(this.profileForm.value.dateOfBirth)
     };
     
+    console.log('Saving profile with values:', profileUpdates);
+    
     this.userProfileService.updateUserProfile(this.userId, profileUpdates).subscribe({
       next: (updatedProfile: UserProfile) => {
+        console.log('Profile updated successfully:', updatedProfile);
         this.isSubmitting = false;
         this.userProfile = updatedProfile;
         this.user = updatedProfile; // 更新user属性
@@ -279,74 +316,77 @@ export class ProfileComponent implements OnInit {
         if (this.isProfileSetup && updatedProfile.isProfileComplete) {
           // 等待一会儿显示成功消息
           setTimeout(() => {
-            this.router.navigate(['/match']);
+            this.navigationService.completeAuthFlow();
           }, 1500);
         }
       },
       error: (error: any) => {
+        console.error('Error updating profile:', error);
         this.isSubmitting = false;
         this.errorMessage = error.message || 'Failed to save profile. Please try again.';
         
-        // Mock环境下，即使出错也模拟成功保存
-        if (error.message === 'Method not implemented. Use the provided implementation in app.config.ts') {
-          // 直接更新当前用户的资料
-          if (this.currentUser) {
-            const updatedUser = {
-              ...this.currentUser,
-              username: this.profileForm.value.username,
-              dateOfBirth: new Date(this.profileForm.value.dateOfBirth),
-              gender: this.profileForm.value.gender,
-              city: this.profileForm.value.city,
-              country: this.profileForm.value.country,
-              bio: this.profileForm.value.bio,
-              interests: this.profileForm.value.interests || []
-            };
-            
-            this.authService.setCurrentUser(updatedUser);
-            
-            // 更新用户资料
-            this.userProfile = {
-              id: updatedUser.id,
-              username: updatedUser.username,
-              email: updatedUser.email,
-              photoUrl: updatedUser.photoUrl,
-              dateOfBirth: updatedUser.dateOfBirth,
-              gender: updatedUser.gender,
-              city: updatedUser.city,
-              country: updatedUser.country,
-              bio: updatedUser.bio,
-              interests: updatedUser.interests,
-              isEmailVerified: updatedUser.isEmailVerified,
-              isProfileComplete: true // 标记为完成
-            };
-            
-            this.user = this.userProfile;
-            this.isProfileComplete = true;
-            this.successMessage = 'Profile updated successfully';
-            this.errorMessage = '';
-            
-            if (!this.isProfileSetup) {
-              this.isEditing = false;
-            }
-            
-            // 如果是个人资料设置且已完成，重定向到匹配
-            if (this.isProfileSetup) {
-              // 等待一会儿显示成功消息
-              setTimeout(() => {
-                this.router.navigate(['/match']);
-              }, 1500);
-            }
-          }
-        }
+        // 即使失败也尝试更新本地用户数据（模拟环境）
+        this.handleProfileSaveInMockEnvironment(profileUpdates);
       }
     });
+  }
+
+  // 处理模拟环境中的保存
+  private handleProfileSaveInMockEnvironment(profileUpdates: any): void {
+    // 直接更新当前用户的资料
+    if (this.currentUser) {
+      const updatedUser = {
+        ...this.currentUser,
+        username: profileUpdates.username,
+        dateOfBirth: new Date(profileUpdates.dateOfBirth),
+        gender: profileUpdates.gender,
+        city: profileUpdates.city,
+        country: profileUpdates.country,
+        bio: profileUpdates.bio,
+        interests: profileUpdates.interests || []
+      };
+      
+      this.authService.setCurrentUser(updatedUser);
+      
+      // 更新用户资料
+      this.userProfile = {
+        id: updatedUser.id,
+        username: updatedUser.username,
+        email: updatedUser.email,
+        photoUrl: updatedUser.photoUrl,
+        dateOfBirth: updatedUser.dateOfBirth,
+        gender: updatedUser.gender,
+        city: updatedUser.city,
+        country: updatedUser.country,
+        bio: updatedUser.bio,
+        interests: updatedUser.interests,
+        isEmailVerified: updatedUser.isEmailVerified,
+        isProfileComplete: true // 标记为完成
+      };
+      
+      this.user = this.userProfile;
+      this.isProfileComplete = true;
+      this.successMessage = 'Profile updated successfully';
+      this.errorMessage = '';
+      
+      if (!this.isProfileSetup) {
+        this.isEditing = false;
+      }
+      
+      // 如果是个人资料设置且已完成，重定向到匹配页面
+      if (this.isProfileSetup) {
+        setTimeout(() => {
+          this.navigationService.completeAuthFlow();
+        }, 1500);
+      }
+    }
   }
 
   toggleEditMode(): void {
     this.isEditing = !this.isEditing;
     if (!this.isEditing) {
       // 如果取消编辑，重置表单为原始值
-      this.initializeForm();
+      this.initializeForm(this.userProfile, true);
       this.successMessage = '';
     }
   }
@@ -433,7 +473,7 @@ export class ProfileComponent implements OnInit {
       this.router.navigate(['/profile']);
     } else {
       // 用当前数据重新加载表单
-      this.initializeForm();
+      this.initializeForm(this.userProfile, true);
       this.successMessage = '';
     }
   }

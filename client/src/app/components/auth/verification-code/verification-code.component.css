@@ -183,7 +183,78 @@ label {
   text-decoration: underline;
 }
 
-/* Responsive Adjustments */
+/* 模拟邮件样式 */
+.demo-email {
+  background-color: #f1f7fc;
+  border: 1px solid #dbe7f3;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 20px 0;
+  text-align: left;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.email-header {
+  border-bottom: 1px solid #dbe7f3;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+  color: #495057;
+  position: relative;
+}
+
+.email-from {
+  font-size: 0.8rem;
+  color: #6c757d;
+  display: block;
+  margin-top: 5px;
+}
+
+.email-body {
+  padding: 0 5px;
+}
+
+.email-body h3 {
+  font-size: 1.2rem;
+  margin: 15px 0 10px;
+  color: #343a40;
+}
+
+.demo-code {
+  font-family: 'Courier New', monospace;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  background-color: #e9f2fa;
+  color: #4f7cac;
+  padding: 12px;
+  border-radius: 6px;
+  margin: 15px 0;
+  text-align: center;
+}
+
+.email-body p {
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+/* 验证码到达时的动画 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.demo-email {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+/* 响应式调整 */
 @media (max-width: 576px) {
   .verify-card {
     padding: 30px 20px;

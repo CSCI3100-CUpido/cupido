@@ -1,48 +1,56 @@
 <!-- src/app/components/auth/register/register.component.html -->
-<div class="auth-container">
-  <div class="auth-card">
-    <div class="auth-header">
-      <h2>Join Cupido</h2>
-      <p>Find your perfect match at The Chinese University of Hong Kong</p>
-    </div>
+<div class="register-container">
+  <div class="register-card">
+    <h2>Create Your Account</h2>
     
-    <form [formGroup]="registerForm" (ngSubmit)="register()" autocomplete="off">
+    <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
+    
+    <form [formGroup]="registerForm" (ngSubmit)="register()">
       <div class="form-group">
         <label for="username">Username</label>
         <input 
           type="text" 
           id="username" 
           formControlName="username" 
-          class="form-control"
-          [class.is-invalid]="username?.errors && username?.touched">
-        <div class="validation-feedback" *ngIf="username?.errors && username?.touched">
+          class="form-control" 
+          [class.is-invalid]="username?.invalid && username?.touched">
+        <div class="validation-feedback" *ngIf="username?.invalid && username?.touched">
           <span *ngIf="username?.errors?.['required']">Username is required</span>
           <span *ngIf="username?.errors?.['minlength']">Username must be at least 3 characters</span>
+          <span *ngIf="username?.errors?.['maxlength']">Username cannot be more than 30 characters</span>
         </div>
       </div>
       
       <div class="form-group">
-        <label for="email">CUHK Email</label>
+        <label for="email">Email</label>
         <input 
           type="email" 
           id="email" 
           formControlName="email" 
-          class="form-control"
-          [class.is-invalid]="email?.errors && email?.touched">
-        <div class="validation-feedback" *ngIf="email?.errors && email?.touched">
+          class="form-control" 
+          [class.is-invalid]="email?.invalid && email?.touched">
+        <div class="validation-feedback" *ngIf="email?.invalid && email?.touched">
           <span *ngIf="email?.errors?.['required']">Email is required</span>
-          <span *ngIf="email?.errors?.['pattern']">Please enter a valid CUHK email (&#64;link.cuhk.edu.hk or &#64;cuhk.edu.hk)</span>
+          <span *ngIf="email?.errors?.['pattern']">Please enter a valid CUHK email address</span>
           <span *ngIf="email?.errors?.['emailExists']">This email is already registered</span>
         </div>
       </div>
       
       <div class="form-group">
         <label for="gender">Gender</label>
-        <select id="gender" formControlName="gender" class="form-control">
+        <select 
+          id="gender" 
+          formControlName="gender" 
+          class="form-control" 
+          [class.is-invalid]="gender?.invalid && gender?.touched">
+          <option value="">Select Gender</option>
           <option value="male">Male</option>
           <option value="female">Female</option>
           <option value="other">Other</option>
         </select>
+        <div class="validation-feedback" *ngIf="gender?.invalid && gender?.touched">
+          <span *ngIf="gender?.errors?.['required']">Gender is required</span>
+        </div>
       </div>
       
       <div class="form-group">
@@ -51,32 +59,34 @@
           type="date" 
           id="dateOfBirth" 
           formControlName="dateOfBirth" 
-          class="form-control"
-          [class.is-invalid]="dateOfBirth?.errors && dateOfBirth?.touched">
-        <div class="validation-feedback" *ngIf="dateOfBirth?.errors && dateOfBirth?.touched">
+          class="form-control" 
+          [class.is-invalid]="dateOfBirth?.invalid && dateOfBirth?.touched"
+          [min]="minDate" 
+          [max]="maxDate">
+        <div class="validation-feedback" *ngIf="dateOfBirth?.invalid && dateOfBirth?.touched">
           <span *ngIf="dateOfBirth?.errors?.['required']">Date of birth is required</span>
           <span *ngIf="dateOfBirth?.errors?.['underAge']">You must be at least 18 years old</span>
         </div>
       </div>
       
-      <div class="form-group">
+      <div class="form-group password-group">
         <label for="password">Password</label>
-        <div class="password-input">
+        <div class="password-input-group">
           <input 
             [type]="showPassword ? 'text' : 'password'" 
             id="password" 
             formControlName="password" 
-            class="form-control"
-            [class.is-invalid]="password?.errors && password?.touched">
-          <button type="button" class="password-toggle" (click)="togglePasswordVisibility()">
+            class="form-control" 
+            placeholder="At least 6 characters" 
+            [class.is-invalid]="password?.invalid && password?.touched">
+          <span class="password-toggle" (click)="togglePasswordVisibility()">
             <i class="fa" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
-          </button>
+          </span>
         </div>
-        <div class="validation-feedback" *ngIf="password?.errors && password?.touched">
+        <div class="validation-feedback" *ngIf="password?.invalid && password?.touched">
           <span *ngIf="password?.errors?.['required']">Password is required</span>
           <span *ngIf="password?.errors?.['minlength']">Password must be at least 6 characters</span>
-          <span *ngIf="password?.errors?.['hasNumber']">Password must contain at least one number</span>
-          <span *ngIf="password?.errors?.['hasCapitalCase']">Password must contain at least one uppercase letter</span>
+          <span *ngIf="password?.errors?.['pattern']">Password must include uppercase, lowercase letters and a number</span>
         </div>
       </div>
       
@@ -86,31 +96,37 @@
           [type]="showPassword ? 'text' : 'password'" 
           id="confirmPassword" 
           formControlName="confirmPassword" 
-          class="form-control"
-          [class.is-invalid]="(confirmPassword?.errors || registerForm.errors?.['passwordMismatch']) && confirmPassword?.touched">
-        <div class="validation-feedback" *ngIf="(confirmPassword?.errors || registerForm.errors?.['passwordMismatch']) && confirmPassword?.touched">
+          class="form-control" 
+          [class.is-invalid]="(confirmPassword?.invalid || registerForm.errors?.['mismatch']) && confirmPassword?.touched">
+        <div class="validation-feedback" *ngIf="(confirmPassword?.invalid || registerForm.errors?.['mismatch']) && confirmPassword?.touched">
           <span *ngIf="confirmPassword?.errors?.['required']">Please confirm your password</span>
-          <span *ngIf="registerForm.errors?.['passwordMismatch']">Passwords must match</span>
+          <span *ngIf="registerForm.errors?.['mismatch']">Passwords don't match</span>
+        </div>
+      </div>
+      
+      <div class="form-group terms-checkbox">
+        <label class="custom-checkbox">
+          <input type="checkbox" formControlName="termsAccepted">
+          <span class="checkmark"></span>
+          I agree to the <a href="#" (click)="openTermsModal($event)">terms and conditions</a>
+        </label>
+        <div class="validation-feedback" *ngIf="termsAccepted?.invalid && termsAccepted?.touched">
+          <span *ngIf="termsAccepted?.errors?.['required']">You must accept the terms and conditions</span>
         </div>
       </div>
       
       <div class="form-group">
-        <label class="checkbox-container">
-          <input type="checkbox" formControlName="agreeTerms">
-          <span class="checkmark"></span>
-          I agree to the <a href="#" (click)="openTermsModal($event)">terms and conditions</a>
-        </label>
-        <div class="validation-feedback" *ngIf="registerForm.get('agreeTerms')?.invalid && registerForm.get('agreeTerms')?.touched">
-          <span>You must agree to the terms and conditions</span>
-        </div>
+        <button 
+          type="submit" 
+          class="btn-primary" 
+          [disabled]="registerForm.invalid || isSubmitting"
+          style="cursor: pointer; opacity: registerForm.invalid ? 0.7 : 1;">
+          {{ isSubmitting ? 'Creating Account...' : 'Create Account' }}
+        </button>
       </div>
       
-      <button type="submit" class="btn-primary" [disabled]="registerForm.invalid || isSubmitting">
-        {{ isSubmitting ? 'Creating Account...' : 'Create Account' }}
-      </button>
-      
-      <div class="auth-footer">
-        <p>Already have an account? <a routerLink="/login">Sign in</a></p>
+      <div class="form-footer">
+        Already have an account? <a (click)="goToLogin()" style="cursor: pointer; color: #4f7cac;">Sign in</a>
       </div>
     </form>
   </div>

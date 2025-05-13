@@ -1,10 +1,11 @@
 // src/app/components/auth/verification-code/verification-code.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { VerificationService } from '../../../services/verification.service';
 import { AuthService } from '../../../services/auth.service';
+import { NavigationService } from '../../../services/navigation.service';
 
 @Component({
   selector: 'app-verification-code',
@@ -21,11 +22,13 @@ export class VerificationCodeComponent implements OnInit, OnDestroy {
   currentEmail = '';
   remainingTime = 0;
   timerInterval: any;
+  demoCodeReceived = false;
 
   constructor(
     private formBuilder: FormBuilder,
     private verificationService: VerificationService,
     private authService: AuthService,
+    private navigationService: NavigationService,
     private router: Router
   ) { }
 
@@ -33,18 +36,6 @@ export class VerificationCodeComponent implements OnInit, OnDestroy {
     this.initializeForm();
     this.loadUserEmail();
     this.startTimer();
-    
-    // For demo purposes, auto-fill the verification code
-    setTimeout(() => {
-      const request = this.verificationService as any;
-      if (request.verificationRequests && this.currentEmail) {
-        const verification = request.verificationRequests.get(this.currentEmail);
-        if (verification && verification.code) {
-          this.verificationForm.get('code')?.setValue(verification.code);
-          console.log(`Auto-filled verification code: ${verification.code} for demo`);
-        }
-      }
-    }, 1000);
   }
 
   initializeForm(): void {
@@ -59,20 +50,27 @@ export class VerificationCodeComponent implements OnInit, OnDestroy {
   }
 
   loadUserEmail(): void {
+    // Try to get email from navigation service first
+    const email = this.navigationService.getEmail();
+    if (email) {
+      this.currentEmail = email;
+      this.resendCode();
+      return;
+    }
+
+    // Fallback to current user
     const user = this.authService.getCurrentUser();
     if (user && user.email) {
       this.currentEmail = user.email;
-      
-      // For demo purposes, auto-send verification code
       this.resendCode();
     } else {
-      // Redirect to login if no user is found
+      // Redirect to login if no user or email found
       this.router.navigate(['/auth/login']);
     }
   }
 
   startTimer(): void {
-    // 30 minutes in seconds
+    // 30 minutes (in seconds)
     this.remainingTime = 30 * 60;
     
     this.timerInterval = setInterval(() => {
@@ -113,10 +111,10 @@ export class VerificationCodeComponent implements OnInit, OnDestroy {
           this.authService.setCurrentUser(currentUser);
         }
         
-        // Navigate to profile completion after a delay
+        // Navigate to profile setup after a delay
         setTimeout(() => {
-          this.router.navigate(['/profile']);
-        }, 2000);
+          this.navigationService.navigateToProfileSetup();
+        }, 1500);
       },
       error: (error) => {
         this.isSubmitting = false;
@@ -131,7 +129,25 @@ export class VerificationCodeComponent implements OnInit, OnDestroy {
     
     this.verificationService.sendVerificationCode(this.currentEmail).subscribe({
       next: () => {
-        this.successMessage = 'Verification code has been sent to your email!';
+        // Simulate receiving the verification code
+        const verificationService = this.verificationService as any;
+        if (verificationService.verificationRequests && this.currentEmail) {
+          const verification = verificationService.verificationRequests.get(this.currentEmail);
+          if (verification && verification.code) {
+            this.demoCodeReceived = true;
+            this.successMessage = `Verification code sent! For demo: Your code is ${verification.code}`;
+            
+            // Optionally auto-fill the code for demo purposes
+            setTimeout(() => {
+              this.verificationForm.get('code')?.setValue(verification.code);
+            }, 1500);
+          } else {
+            this.successMessage = 'Verification code has been sent to your email!';
+          }
+        } else {
+          this.successMessage = 'Verification code has been sent to your email!';
+        }
+        
         // Reset the timer
         clearInterval(this.timerInterval);
         this.startTimer();

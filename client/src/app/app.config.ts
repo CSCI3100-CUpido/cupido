@@ -17,16 +17,19 @@ import { VerificationService } from './services/verification.service';
 import { MockVerificationService } from './services/mock-verification.service';
 import { UserProfileService } from './services/user-profile.service';
 import { MockUserProfileService } from './services/mock-user-profile.service';
+import { NavigationService } from './services/navigation.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideHttpClient(withInterceptors([])),
-    // Provide all needed services (real services implemented by mock services)
+    // 提供所有需要的服务
     { provide: AuthService, useClass: MockAuthService },
     { provide: ConfessionService, useClass: MockConfessionService },
     { provide: MatchingService, useClass: EnhancedMatchingService },
     { provide: VerificationService, useClass: MockVerificationService },
-    { provide: UserProfileService, useClass: MockUserProfileService }
+    { provide: UserProfileService, useClass: MockUserProfileService },
+    NavigationService
   ]
 };
+

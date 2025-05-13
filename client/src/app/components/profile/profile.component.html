@@ -6,8 +6,8 @@
     <p>Loading profile...</p>
   </div>
   
-  <!-- User Not Found -->
-  <div class="error-message" *ngIf="errorMessage && !isLoading">
+  <!-- User Not Found - 修改为仅在未找到且没有正在编辑时显示 -->
+  <div class="error-message" *ngIf="errorMessage && !isLoading && !user && !isEditing">
     <div class="error-icon">
       <i class="fa fa-exclamation-circle"></i>
     </div>
@@ -50,7 +50,7 @@
           class="btn-save" 
           *ngIf="isEditing" 
           (click)="saveProfile()"
-          [disabled]="profileForm.invalid">
+          [disabled]="profileForm.invalid || isSubmitting">
           <i class="fa fa-check"></i> Save
         </button>
         <button 
@@ -71,6 +71,11 @@
     <!-- Success Message -->
     <div class="success-message" *ngIf="successMessage">
       <i class="fa fa-check-circle"></i> {{ successMessage }}
+    </div>
+    
+    <!-- Error Message (in-content) -->
+    <div class="error-message" *ngIf="errorMessage && user">
+      <i class="fa fa-exclamation-circle"></i> {{ errorMessage }}
     </div>
     
     <!-- Profile Tabs -->

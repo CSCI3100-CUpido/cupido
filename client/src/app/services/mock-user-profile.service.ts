@@ -113,30 +113,34 @@ export class MockUserProfileService {
     const profile = this.userProfiles.get(userId);
     
     if (!profile) {
-      // If profile not found, fetch user and create profile
+      // 如果没有找到用户资料，创建一个新的基于当前用户
       return this.mockAuthService.getUserById(userId).pipe(
         map(user => {
+          // 创建默认配置文件
           const newProfile: UserProfile = {
             id: user.id,
             username: user.username,
             email: user.email,
-            photoUrl: user.photoUrl,
-            dateOfBirth: user.dateOfBirth,
-            gender: user.gender,
-            interests: user.interests,
-            city: user.city,
-            country: user.country,
-            bio: user.bio,
-            isEmailVerified: user.isEmailVerified,
-            isProfileComplete: this.calculateProfileCompletion(user),
-            campus: 'CUHK', // Default for mock
+            photoUrl: user.photoUrl || 'assets/images/avatar-default.jpg',
+            dateOfBirth: user.dateOfBirth || new Date(),
+            gender: user.gender || '',
+            interests: user.interests || [],
+            city: user.city || 'Hong Kong',
+            country: user.country || 'China',
+            bio: user.bio || '',
+            isEmailVerified: user.isEmailVerified || false,
+            isProfileComplete: false,
+            campus: 'CUHK',
             department: this.getRandomDepartment(),
-            graduationYear: 2023 + Math.floor(Math.random() * 4) // Random graduation year
+            graduationYear: 2023 + Math.floor(Math.random() * 4)
           };
           
+          // 保存到内存中
           this.userProfiles.set(userId, newProfile);
           return newProfile;
-        })
+        }),
+        // 添加延迟使其看起来像网络请求
+        delay(300)
       );
     }
     
@@ -147,35 +151,51 @@ export class MockUserProfileService {
    * Update user profile
    */
   updateUserProfile(userId: string, profile: Partial<UserProfile>): Observable<UserProfile> {
-    // Get existing profile
-    const existingProfile = this.userProfiles.get(userId);
+    console.log('Updating profile for user:', userId, profile);
+
+    // 获取现有的资料或创建一个新的
+    let existingProfile = this.userProfiles.get(userId);
     
     if (!existingProfile) {
-      return throwError(() => new Error('User profile not found'));
+      // 如果没有现有的资料，创建一个基本的
+      existingProfile = {
+        id: userId,
+        username: profile.username || 'New User',
+        email: profile.email || '',
+        isEmailVerified: false,
+        isProfileComplete: false
+      };
     }
     
-    // Update profile
+    // 更新资料
     const updatedProfile = {
       ...existingProfile,
       ...profile,
-      // Recalculate profile completion
+      // 重新计算资料完成状态
       isProfileComplete: this.calculateProfileCompletionFromProfile({
         ...existingProfile,
         ...profile
       })
     };
     
-    // Save updated profile
+    // 保存更新后的资料
     this.userProfiles.set(userId, updatedProfile);
     
-    // Also update the user object
-    this.mockAuthService.updateUserProfile(profile as Partial<User>).subscribe();
+    // 同时更新认证服务中的用户对象
+    this.mockAuthService.updateUserProfile(profile as Partial<User>).subscribe({
+      next: (user) => {
+        console.log('User updated in auth service:', user);
+      },
+      error: (error) => {
+        console.error('Error updating user in auth service:', error);
+      }
+    });
     
     return of(updatedProfile).pipe(delay(500));
   }
   
   private calculateProfileCompletionFromProfile(profile: UserProfile): boolean {
-    // Check if all required fields are filled
+    // 检查所有必填字段是否已填写
     const requiredFields = [
       profile.username,
       profile.email,
