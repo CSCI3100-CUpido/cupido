@@ -10,6 +10,21 @@
       <p>We've sent a verification code to:</p>
       <p class="email">{{ currentEmail }}</p>
       
+      <!-- Demo email notification -->
+      <div class="demo-email" *ngIf="demoCodeReceived">
+        <div class="email-header">
+          <i class="fa fa-envelope"></i> 
+          <strong>Email Preview</strong>
+          <span class="email-from">From: verification&#64;cupido.app</span>
+        </div>
+        <div class="email-body">
+          <h3>Cupido Email Verification</h3>
+          <p>Hello! Thanks for using Cupido. Below is your verification code:</p>
+          <div class="demo-code">{{ verificationForm.get('code')?.value }}</div>
+          <p>This code will expire in {{ formatTime(remainingTime) }}.</p>
+        </div>
+      </div>
+      
       <form [formGroup]="verificationForm" (ngSubmit)="verifyCode()">
         <div class="form-group">
           <label for="code">Enter Verification Code</label>
@@ -39,7 +54,7 @@
         
         <div class="feedback-section">
           <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
-          <p class="success-message" *ngIf="successMessage">{{ successMessage }}</p>
+          <p class="success-message" *ngIf="successMessage && !demoCodeReceived">{{ successMessage }}</p>
         </div>
         
         <div class="verify-actions">
@@ -48,7 +63,7 @@
           </button>
           
           <button type="button" class="btn-secondary" (click)="resendCode()" [disabled]="isSubmitting">
-            Resend Code
+            {{ demoCodeReceived ? 'Resend New Code' : 'Resend Code' }}
           </button>
           
           <a class="btn-link" (click)="goToLogin()">Back to Login</a>
